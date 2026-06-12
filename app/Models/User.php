@@ -25,6 +25,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'role',
+        'supervisor_id',
     ];
 
     /**
@@ -51,9 +52,29 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    public function supervisor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'supervisor_id');
+    }
+
+    public function workers(): HasMany
+    {
+        return $this->hasMany(User::class, 'supervisor_id');
+    }
+
     public function sentInvitations(): HasMany
     {
         return $this->hasMany(SupervisorInvitation::class, 'invited_by');
+    }
+
+    public function createdTasks(): HasMany
+    {
+        return $this->hasMany(Task::class, 'supervisor_id');
+    }
+
+    public function assignedTasks(): HasMany
+    {
+        return $this->hasMany(Task::class, 'assigned_to');
     }
 
     public function isAdmin(): bool
@@ -64,5 +85,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isSupervisor(): bool
     {
         return $this->role === UserRole::Supervisor;
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->role === UserRole::Staff;
     }
 }

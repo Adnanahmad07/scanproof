@@ -64,4 +64,27 @@ Route::middleware(['auth', 'role:supervisor'])->prefix('supervisor')->name('supe
     Route::get('dashboard', function () {
         return view('pages.supervisor.dashboard');
     })->name('dashboard');
+
+    Route::get('workers', function () {
+        return view('pages.supervisor.workers');
+    })->name('workers');
+
+    Route::get('tasks', function () {
+        return view('pages.supervisor.tasks');
+    })->name('tasks');
+});
+
+// Staff Routes (auth + role check)
+Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->group(function () {
+    Route::get('dashboard', function () {
+        return view('pages.staff.dashboard');
+    })->name('dashboard');
+
+    Route::get('tasks', function () {
+        return view('pages.staff.tasks');
+    })->name('tasks');
+
+    Route::get('scan', function () {
+        return view('pages.staff.scan');
+    })->name('scan');
 });
