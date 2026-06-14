@@ -26,6 +26,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'role',
         'supervisor_id',
+        'can_print_qr',
     ];
 
     /**
@@ -49,6 +50,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'can_print_qr' => 'boolean',
         ];
     }
 
@@ -77,6 +79,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Task::class, 'assigned_to');
     }
 
+    public function createdLocations(): HasMany
+    {
+        return $this->hasMany(Location::class, 'created_by');
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;
@@ -90,5 +97,15 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isStaff(): bool
     {
         return $this->role === UserRole::Staff;
+    }
+
+    /**
+     * Whether this user may print / download QR code sheets.
+     * Admins always may; supervisors only when explicitly granted.
+     */
+    public function canPrintQr(): bool
+    {
+        return $this->isAdmin()
+            || ($this->isSupervisor() && (bool) $this->can_print_qr);
     }
 }

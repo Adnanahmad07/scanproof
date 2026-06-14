@@ -37,6 +37,7 @@
                         <tr class="border-b border-gray-200">
                             <th class="text-left py-3 px-4 font-medium text-gray-500">Name</th>
                             <th class="text-left py-3 px-4 font-medium text-gray-500">Email</th>
+                            <th class="text-left py-3 px-4 font-medium text-gray-500 hidden sm:table-cell">Print QR</th>
                             <th class="text-left py-3 px-4 font-medium text-gray-500">Joined</th>
                             <th class="text-right py-3 px-4 font-medium text-gray-500">Actions</th>
                         </tr>
@@ -53,6 +54,13 @@
                                     </div>
                                 </td>
                                 <td class="py-3 px-4 text-gray-500">{{ $supervisor->email }}</td>
+                                <td class="py-3 px-4 hidden sm:table-cell">
+                                    <button wire:click="togglePrintPermission({{ $supervisor->id }})"
+                                            type="button"
+                                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors {{ $supervisor->can_print_qr ? 'bg-blue-600' : 'bg-gray-200' }} cursor-pointer">
+                                        <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform {{ $supervisor->can_print_qr ? 'translate-x-6' : 'translate-x-1' }}"></span>
+                                    </button>
+                                </td>
                                 <td class="py-3 px-4 text-gray-400">{{ $supervisor->created_at->diffForHumans() }}</td>
                                 <td class="py-3 px-4 text-right">
                                     <button wire:click="confirmDelete({{ $supervisor->id }})"

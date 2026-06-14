@@ -144,6 +144,15 @@
                     <span>Supervisors</span>
                 </a>
 
+                <a href="{{ route('admin.locations.index') }}" @click="sidebarOpen = false"
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all border-r-2 {{ request()->routeIs('admin.locations.*') ? 'text-primary bg-primary/5 border-r-primary' : 'text-text-secondary hover:text-text-primary hover:bg-surface-container border-r-transparent' }}">
+                    <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Locations</span>
+                </a>
+
                 <a href="#" @click="sidebarOpen = false"
                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-surface-container transition-all border-r-2 border-r-transparent">
                     <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -229,7 +238,7 @@
 
             {{-- Page Content --}}
             <main class="flex-1 p-4 md:p-6 lg:p-8 xl:px-12 xl:py-8 2xl:px-16 2xl:py-10 pb-24 lg:pb-8">
-                @yield('content')
+                {{ $slot ?? '' }}@yield('content')
             </main>
         </div>
 
@@ -265,8 +274,8 @@
                     <span class="text-[10px] font-medium text-text-muted mt-0.5">Scan</span>
                 </a>
 
-                <a href="#"
-                   class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors text-text-muted hover:text-text-secondary">
+                <a href="{{ route('admin.locations.index') }}"
+                   class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors {{ request()->routeIs('admin.locations.*') ? 'text-primary' : 'text-text-muted hover:text-text-secondary' }}">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />

@@ -64,4 +64,11 @@ class UserFactory extends Factory
             'role' => UserRole::Admin,
         ]);
     }
+
+    public function canPrint(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'can_print_qr' => true,
+        ]);
+    }
 }

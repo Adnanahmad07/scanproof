@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\QrPrintController;
 use App\Http\Controllers\Admin\SupervisorInvitationController;
+use App\Livewire\Admin\LocationManagement;
 use App\Livewire\Supervisor\SetPassword;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +36,17 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         ->name('supervisors.invite');
     Route::delete('supervisors/{invitation}', [SupervisorInvitationController::class, 'destroy'])
         ->name('supervisors.cancel');
+
+    Route::get('locations', LocationManagement::class)
+        ->name('locations.index');
+});
+
+// QR Print/PDF (admin + supervisors with print permission)
+Route::middleware(['auth'])->group(function () {
+    Route::get('admin/locations/print', [QrPrintController::class, 'printSheet'])
+        ->name('admin.locations.print');
+    Route::get('admin/locations/pdf', [QrPrintController::class, 'downloadPdf'])
+        ->name('admin.locations.pdf');
 });
 
 // Dashboard (handles role-based redirect)

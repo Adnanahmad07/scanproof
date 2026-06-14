@@ -102,6 +102,14 @@ class SupervisorManagement extends Component
         }
     }
 
+    public function togglePrintPermission(int $userId): void
+    {
+        $user = User::where('id', $userId)->where('role', 'supervisor')->firstOrFail();
+        $user->update(['can_print_qr' => !$user->can_print_qr]);
+
+        session()->flash('success', "Print permission " . ($user->can_print_qr ? 'granted' : 'revoked') . " for {$user->name}.");
+    }
+
     public function render()
     {
         return view('livewire.admin.supervisor-management', [

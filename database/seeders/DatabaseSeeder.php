@@ -2,10 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Enums\LocationType;
 use App\Enums\TaskCategory;
 use App\Enums\TaskPriority;
 use App\Enums\TaskStatus;
 use App\Enums\UserRole;
+use App\Models\Location;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -18,7 +20,7 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        User::factory()->create([
+        $admin = User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@scanproof.com',
             'password' => Hash::make('password'),
@@ -45,6 +47,67 @@ class DatabaseSeeder extends Seeder
             'supervisor_id' => $supervisor->id,
         ]);
 
+        // --- Locations ---
+        $hq = Location::create([
+            'name' => 'HQ Building',
+            'type' => LocationType::Building,
+            'created_by' => $admin->id,
+        ]);
+
+        $ground = Location::create([
+            'name' => 'Ground Floor',
+            'type' => LocationType::Floor,
+            'parent_id' => $hq->id,
+            'building' => 'HQ Building',
+            'created_by' => $admin->id,
+        ]);
+
+        $first = Location::create([
+            'name' => 'First Floor',
+            'type' => LocationType::Floor,
+            'parent_id' => $hq->id,
+            'building' => 'HQ Building',
+            'created_by' => $admin->id,
+        ]);
+
+        Location::create([
+            'name' => 'Main Lobby',
+            'type' => LocationType::Room,
+            'parent_id' => $ground->id,
+            'building' => 'HQ Building',
+            'floor' => 'Ground Floor',
+            'created_by' => $admin->id,
+        ]);
+
+        Location::create([
+            'name' => 'Conference Room A',
+            'type' => LocationType::Room,
+            'parent_id' => $ground->id,
+            'building' => 'HQ Building',
+            'floor' => 'Ground Floor',
+            'created_by' => $admin->id,
+        ]);
+
+        Location::create([
+            'name' => 'Server Room',
+            'type' => LocationType::Room,
+            'parent_id' => $first->id,
+            'building' => 'HQ Building',
+            'floor' => 'First Floor',
+            'created_by' => $admin->id,
+        ]);
+
+        Location::create([
+            'name' => 'Main Entrance',
+            'type' => LocationType::Checkpoint,
+            'parent_id' => $ground->id,
+            'building' => 'HQ Building',
+            'floor' => 'Ground Floor',
+            'notes' => 'Security checkpoint at main entrance',
+            'created_by' => $admin->id,
+        ]);
+
+        // --- Tasks ---
         Task::create([
             'title' => 'Clean Conference Room A',
             'description' => 'Deep clean the conference room including tables, chairs, and windows.',

@@ -1,0 +1,25 @@
+name,type,parent,building,floor,notes
+HQ Tower,building,,,,"Main headquarters building"
+North Wing,building,,,,"North wing expansion"
+Ground Floor,floor,HQ Tower,HQ Tower,,"Ground level"
+First Floor,floor,HQ Tower,HQ Tower,,"First level"
+Second Floor,floor,HQ Tower,HQ Tower,,"Second level"
+North Ground,floor,North Wing,North Wing,,"North ground level"
+Main Lobby,room,Ground Floor,HQ Tower,Ground Floor,Main entrance lobby
+Reception Desk,room,Ground Floor,HQ Tower,Ground Floor,Front reception
+Conference Room A,room,Ground Floor,HQ Tower,Ground Floor,Big conference room seats 20
+Conference Room B,room,Ground Floor,HQ Tower,Ground Floor,Small meeting room
+Cafeteria,room,Ground Floor,HQ Tower,Ground Floor,Staff canteen
+Open Office,room,First Floor,HQ Tower,First Floor,Main open workspace
+Server Room,room,First Floor,HQ Tower,First Floor,Restricted access IT room
+Manager Office,room,First Floor,HQ Tower,First Floor,Executive office
+Lab Room,room,Second Floor,HQ Tower,Second Floor,Testing laboratory
+Training Room,room,Second Floor,HQ Tower,Second Floor,Training and workshops
+Storage Room,room,Second Floor,HQ Tower,Second Floor,General storage
+North Reception,room,North Ground,North Wing,North Ground,North wing entrance
+North Office,room,North Ground,North Wing,North Ground,Open office north
+Projector,asset,Conference Room A,HQ Tower,Ground Floor,4K ceiling projector
+AC Unit 1,asset,Open Office,HQ Tower,First Floor,HVAC unit for open office
+Fire Extinguisher A,checkpoint,Main Lobby,HQ Tower,Ground Floor,Monthly safety check
+Security Camera North,checkpoint,North Reception,North Wing,North Ground,Surveillance camera
+Main Entrance,checkpoint,Main Lobby,HQ Tower,Ground Floor,Daily security check
