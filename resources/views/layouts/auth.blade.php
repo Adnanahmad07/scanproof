@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'ScanProof - Authentication')</title>
 
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/logo.jpeg') }}">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700" rel="stylesheet" />
 
@@ -40,22 +41,16 @@
             <div class="relative z-10 flex flex-col justify-between p-12 w-full">
                 {{-- Logo --}}
                 <div class="flex items-center gap-3">
-                    <div class="w-11 h-11 bg-white rounded-xl flex items-center justify-center shadow-lg">
-                        <svg class="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                        </svg>
-                    </div>
+                    <x-application-logo class="w-36 h-11 bg-white shadow-lg" />
                     <span class="text-2xl font-bold text-white tracking-tight">ScanProof</span>
                 </div>
 
                 {{-- Center Illustration --}}
                 <div class="flex-1 flex items-center justify-center">
                     <div class="text-center text-white space-y-6">
-                        {{-- Large SVG Illustration --}}
-                        <div class="mx-auto w-64 h-64 bg-white/10 rounded-3xl backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-2xl">
-                            <svg class="w-32 h-32 text-white/90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                            </svg>
+                        {{-- Large Illustration --}}
+                        <div class="mx-auto w-64 h-64 bg-white/10 rounded-3xl backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-2xl p-12">
+                            <x-application-logo class="w-full h-auto opacity-90" />
                         </div>
 
                         <div class="space-y-3">
@@ -90,11 +85,7 @@
             <div class="w-full max-w-md">
                 {{-- Mobile-only Logo --}}
                 <div class="lg:hidden flex items-center gap-2 mb-8">
-                    <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-                        <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                        </svg>
-                    </div>
+                    <x-application-logo class="w-32 h-10" />
                     <span class="text-xl font-bold text-text-primary">ScanProof</span>
                 </div>
 

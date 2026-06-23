@@ -18,6 +18,7 @@ class Task extends Model
         'title',
         'description',
         'location',
+        'location_id',
         'category',
         'priority',
         'status',
@@ -51,6 +52,11 @@ class Task extends Model
         return $this->hasMany(TaskPhoto::class);
     }
 
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(Location::class);
+    }
+
     public function scopeForWorker($query, int $workerId)
     {
         return $query->where('assigned_to', $workerId);
@@ -59,5 +65,10 @@ class Task extends Model
     public function scopeBySupervisor($query, int $supervisorId)
     {
         return $query->where('supervisor_id', $supervisorId);
+    }
+
+    public function scopeByLocation($query, int $locationId)
+    {
+        return $query->where('location_id', $locationId);
     }
 }

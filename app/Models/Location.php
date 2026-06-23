@@ -56,6 +56,17 @@ class Location extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class);
+    }
+
+    public function activeTasks(): HasMany
+    {
+        return $this->hasMany(Task::class)
+            ->whereNotIn('status', [TaskStatus::Completed, TaskStatus::Verified]);
+    }
+
     /**
      * Public scan URL — always uuid, never the numeric id.
      */

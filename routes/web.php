@@ -10,6 +10,10 @@ Route::get('/', function () {
     return view('pages.landing');
 })->name('home');
 
+Route::get('/pricing', function () {
+    return view('pages.pricing');
+})->name('pricing');
+
 // Email verification notice (needed alongside Fortify)
 Route::get('/email/verify', function () {
     return view('auth.verify-email');

@@ -5,6 +5,7 @@ namespace App\Livewire\Supervisor;
 use App\Enums\TaskCategory;
 use App\Enums\TaskPriority;
 use App\Enums\TaskStatus;
+use App\Models\Location;
 use App\Models\Task;
 use App\Models\User;
 use Livewire\Component;
@@ -17,7 +18,7 @@ class TaskAssignment extends Component
     public $showCreateModal = false;
     public $taskTitle = '';
     public $taskDescription = '';
-    public $taskLocation = '';
+    public $taskLocationId = '';
     public $taskCategory = 'cleaning';
     public $taskPriority = 'medium';
     public $taskDueDate = '';
@@ -27,7 +28,7 @@ class TaskAssignment extends Component
     protected $rules = [
         'taskTitle' => 'required|string|max:255',
         'taskDescription' => 'nullable|string|max:1000',
-        'taskLocation' => 'required|string|max:255',
+        'taskLocationId' => 'required|exists:locations,id',
         'taskCategory' => 'required|in:cleaning,maintenance,inspection,other',
         'taskPriority' => 'required|in:low,medium,high,urgent',
         'taskDueDate' => 'nullable|date|after_or_equal:today',
@@ -36,7 +37,8 @@ class TaskAssignment extends Component
 
     protected $messages = [
         'taskTitle.required' => 'Title is required.',
-        'taskLocation.required' => 'Location is required.',
+        'taskLocationId.required' => 'Location is required.',
+        'taskLocationId.exists' => 'Selected location does not exist.',
         'taskAssignedTo.required' => 'Please assign this task to a worker.',
         'taskAssignedTo.exists' => 'Selected worker does not exist.',
         'taskDueDate.after_or_equal' => 'Due date must be today or later.',
@@ -47,9 +49,18 @@ class TaskAssignment extends Component
         return User::where('supervisor_id', auth()->id())->get();
     }
 
+    public function getLocationsProperty()
+    {
+        return Location::orderBy('building')
+            ->orderBy('floor')
+            ->orderBy('name')
+            ->get();
+    }
+
     public function getTasksProperty()
     {
         return Task::where('supervisor_id', auth()->id())
+            ->with('location')
             ->latest()
             ->paginate(10);
     }
@@ -58,10 +69,13 @@ class TaskAssignment extends Component
     {
         $this->validate();
 
+        $location = Location::find($this->taskLocationId);
+
         Task::create([
             'title' => $this->taskTitle,
             'description' => $this->taskDescription,
-            'location' => $this->taskLocation,
+            'location' => $location ? $location->name : '',
+            'location_id' => $this->taskLocationId,
             'category' => $this->taskCategory,
             'priority' => $this->taskPriority,
             'status' => TaskStatus::Pending,
@@ -78,7 +92,7 @@ class TaskAssignment extends Component
     {
         $this->taskTitle = '';
         $this->taskDescription = '';
-        $this->taskLocation = '';
+        $this->taskLocationId = '';
         $this->taskCategory = 'cleaning';
         $this->taskPriority = 'medium';
         $this->taskDueDate = '';
@@ -108,6 +122,7 @@ class TaskAssignment extends Component
         return view('livewire.supervisor.task-assignment', [
             'tasks' => $this->tasks,
             'workers' => $this->workers,
+            'locations' => $this->locations,
         ]);
     }
 }

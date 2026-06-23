@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Dashboard - ScanProof')</title>
 
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/logo.jpeg') }}">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700" rel="stylesheet" />
 
@@ -58,11 +59,7 @@
 
             {{-- Logo --}}
             <div class="h-20 flex items-center gap-3 px-6 border-b border-surface-high">
-                <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-sm">
-                    <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                </div>
+                <x-application-logo class="w-32 h-10" />
                 <span class="text-xl font-bold text-text-primary tracking-tight">ScanProof</span>
             </div>
 
@@ -134,13 +131,6 @@
                     </a>
                 @endif
 
-                <a href="#" @click="sidebarOpen = false"
-                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-surface-container transition-all border-r-2 border-r-transparent">
-                    <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <span>Reports</span>
-                </a>
             </nav>
 
             {{-- Sidebar Footer --}}
