@@ -2,20 +2,16 @@
 
 namespace App\Livewire\Staff;
 
-use App\Enums\TaskStatus;
-use App\Models\Task;
+use App\Models\Issue;
+use App\Models\Location;
 use Livewire\Component;
-use Livewire\WithFileUploads;
 
 class ScanScreen extends Component
 {
-    use WithFileUploads;
-
     public $scanCode = '';
-    public $foundTask = null;
-    public $showCamera = false;
-    public $beforePhoto = null;
-    public $afterPhoto = null;
+    public $foundLocation = null;
+    public $foundIssues = [];
+    public $showCamera = true;
 
     protected $rules = [
         'scanCode' => 'required|string|max:255',
@@ -24,72 +20,73 @@ class ScanScreen extends Component
     public function scanCode()
     {
         $this->validate();
+        $this->foundIssues = [];
 
-        $this->foundTask = Task::where('assigned_to', auth()->id())
-            ->where('location', 'like', '%' . $this->scanCode . '%')
+        $location = Location::where('uuid', $this->scanCode)->first();
+
+        if (!$location) {
+            $this->addError('scanCode', 'Location not found for this code.');
+            $this->foundLocation = null;
+            return;
+        }
+
+        $this->foundLocation = $location;
+
+        $this->foundIssues = Issue::where('location_id', $location->id)
+            ->where('assigned_to', auth()->id())
+            ->whereIn('status', ['assigned', 'in_progress'])
+            ->with('location')
+            ->get()
+            ->toArray();
+    }
+
+    public function startIssue($issueId)
+    {
+        $issue = Issue::where('id', $issueId)
+            ->where('assigned_to', auth()->id())
+            ->where('status', 'assigned')
             ->first();
 
-        if (!$this->foundTask) {
-            $this->addError('scanCode', 'No task found for this code.');
+        if ($issue) {
+            $issue->transitionTo('in_progress', auth()->id());
+            $this->refreshIssues();
+            session()->flash('success', 'Issue started!');
         }
     }
 
-    public function startTask()
+    public function completeIssue($issueId)
     {
-        if ($this->foundTask && $this->foundTask->status === TaskStatus::Pending) {
-            $this->foundTask->update(['status' => TaskStatus::InProgress]);
-            $this->foundTask->refresh();
+        $issue = Issue::where('id', $issueId)
+            ->where('assigned_to', auth()->id())
+            ->where('status', 'in_progress')
+            ->first();
 
-            session()->flash('success', 'Task started!');
+        if ($issue) {
+            $issue->transitionTo('resolved', auth()->id());
+            $this->refreshIssues();
+            session()->flash('success', 'Issue completed!');
         }
     }
 
-    public function completeTask()
+    private function refreshIssues()
     {
-        if ($this->foundTask && $this->foundTask->status === TaskStatus::InProgress) {
-            $this->foundTask->update(['status' => TaskStatus::Completed]);
-            $this->foundTask->refresh();
-
-            session()->flash('success', 'Task completed!');
+        if (!$this->foundLocation) {
+            return;
         }
-    }
 
-    public function uploadBeforePhoto()
-    {
-        if ($this->beforePhoto && $this->foundTask) {
-            $path = $this->beforePhoto->store('task-photos', 'public');
-
-            $this->foundTask->photos()->create([
-                'type' => 'before',
-                'path' => $path,
-            ]);
-
-            $this->beforePhoto = null;
-            session()->flash('success', 'Before photo uploaded.');
-        }
-    }
-
-    public function uploadAfterPhoto()
-    {
-        if ($this->afterPhoto && $this->foundTask) {
-            $path = $this->afterPhoto->store('task-photos', 'public');
-
-            $this->foundTask->photos()->create([
-                'type' => 'after',
-                'path' => $path,
-            ]);
-
-            $this->afterPhoto = null;
-            session()->flash('success', 'After photo uploaded.');
-        }
+        $this->foundIssues = Issue::where('location_id', $this->foundLocation->id)
+            ->where('assigned_to', auth()->id())
+            ->whereIn('status', ['assigned', 'in_progress'])
+            ->with('location')
+            ->get()
+            ->toArray();
     }
 
     public function resetScan()
     {
         $this->scanCode = '';
-        $this->foundTask = null;
-        $this->beforePhoto = null;
-        $this->afterPhoto = null;
+        $this->foundLocation = null;
+        $this->foundIssues = [];
         $this->showCamera = false;
     }
 

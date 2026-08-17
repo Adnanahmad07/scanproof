@@ -11,7 +11,7 @@
     {{-- Header --}}
     <div class="mb-6">
         <h2 class="text-lg font-bold text-text-primary">Scan QR Code</h2>
-        <p class="text-sm text-text-muted mt-0.5">Scan a facility QR code or enter the code manually</p>
+        <p class="text-sm text-text-muted mt-0.5">Scan a location QR code to see your assigned issues</p>
     </div>
 
     {{-- Camera Scanner --}}
@@ -45,7 +45,7 @@
         <form wire:submit="scanCode" class="flex gap-3">
             <input type="text" wire:model="scanCode"
                    class="flex-1 px-4 py-2.5 bg-surface-low border border-surface-high rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all text-sm"
-                   placeholder="Enter location code">
+                   placeholder="Enter location UUID">
             <button type="submit"
                     class="px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm">
                 Search
@@ -54,139 +54,83 @@
         @error('scanCode') <p class="text-error text-xs mt-2">{{ $message }}</p> @enderror
     </div>
 
-    {{-- Found Task Card --}}
-    @if($foundTask)
-        <div class="bg-white rounded-2xl border border-surface-high overflow-hidden">
-            <div class="px-6 py-4 border-b border-surface-high bg-surface-low/50">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-semibold text-text-primary">Task Found</h3>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
-                        @if($foundTask->status->value === 'pending') bg-warning/10 text-warning
-                        @elseif($foundTask->status->value === 'in_progress') bg-info/10 text-info
-                        @elseif($foundTask->status->value === 'completed') bg-success/10 text-success
-                        @else bg-error/10 text-error
-                        @endif">
-                        {{ $foundTask->status->label() }}
-                    </span>
-                </div>
-            </div>
-
-            <div class="p-6 space-y-4">
-                <div>
-                    <h4 class="text-base font-bold text-text-primary">{{ $foundTask->title }}</h4>
-                    <p class="text-sm text-text-muted mt-1">{{ $foundTask->location }}</p>
-                </div>
-
-                <div class="flex flex-wrap gap-2">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-info/10 text-info">
-                        {{ $foundTask->category->label() }}
-                    </span>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
-                        @if($foundTask->priority->value === 'urgent') bg-error/10 text-error
-                        @elseif($foundTask->priority->value === 'high') bg-warning/10 text-warning
-                        @elseif($foundTask->priority->value === 'medium') bg-info/10 text-info
-                        @else bg-success/10 text-success
-                        @endif">
-                        {{ $foundTask->priority->label() }}
-                    </span>
-                    @if($foundTask->due_date)
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-surface-container text-text-secondary">
-                            Due: {{ $foundTask->due_date->format('M d, Y') }}
-                        </span>
-                    @endif
-                </div>
-
-                @if($foundTask->description)
-                    <p class="text-sm text-text-secondary">{{ $foundTask->description }}</p>
-                @endif
-
-                {{-- Photos Section --}}
-                <div class="border-t border-surface-high pt-4">
-                    <h5 class="text-sm font-semibold text-text-primary mb-3">Photos (Optional)</h5>
-                    <div class="grid grid-cols-2 gap-4">
-                        {{-- Before Photo --}}
-                        <div>
-                            <p class="text-xs text-text-muted mb-2">Before Photo</p>
-                            @if($foundTask->photos->where('type', 'before')->count())
-                                <div class="w-full h-32 bg-surface-low rounded-xl overflow-hidden">
-                                    <img src="{{ asset('storage/' . $foundTask->photos->where('type', 'before')->first()->path) }}" 
-                                         class="w-full h-full object-cover" alt="Before">
-                                </div>
-                            @else
-                                <label class="block w-full h-32 bg-surface-low rounded-xl border-2 border-dashed border-surface-high hover:border-primary cursor-pointer transition-colors">
-                                    <input type="file" wire:model="beforePhoto" accept="image/*" class="hidden">
-                                    <div class="flex flex-col items-center justify-center h-full">
-                                        <svg class="w-8 h-8 text-text-muted mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                        <span class="text-xs text-text-muted">Upload</span>
-                                    </div>
-                                </label>
-                                @if($beforePhoto)
-                                    <button wire:click="uploadBeforePhoto" wire:loading.attr="disabled"
-                                            class="mt-2 w-full px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary/90 transition-colors">
-                                        Save Before Photo
-                                    </button>
-                                @endif
-                            @endif
-                        </div>
-
-                        {{-- After Photo --}}
-                        <div>
-                            <p class="text-xs text-text-muted mb-2">After Photo</p>
-                            @if($foundTask->photos->where('type', 'after')->count())
-                                <div class="w-full h-32 bg-surface-low rounded-xl overflow-hidden">
-                                    <img src="{{ asset('storage/' . $foundTask->photos->where('type', 'after')->first()->path) }}" 
-                                         class="w-full h-full object-cover" alt="After">
-                                </div>
-                            @else
-                                <label class="block w-full h-32 bg-surface-low rounded-xl border-2 border-dashed border-surface-high hover:border-primary cursor-pointer transition-colors">
-                                    <input type="file" wire:model="afterPhoto" accept="image/*" class="hidden">
-                                    <div class="flex flex-col items-center justify-center h-full">
-                                        <svg class="w-8 h-8 text-text-muted mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                        <span class="text-xs text-text-muted">Upload</span>
-                                    </div>
-                                </label>
-                                @if($afterPhoto)
-                                    <button wire:click="uploadAfterPhoto" wire:loading.attr="disabled"
-                                            class="mt-2 w-full px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary/90 transition-colors">
-                                        Save After Photo
-                                    </button>
-                                @endif
-                            @endif
-                        </div>
+    {{-- Found Location --}}
+    @if($foundLocation)
+        <div class="bg-white rounded-2xl border border-surface-high overflow-hidden mb-6">
+            <div class="px-6 py-4 border-b border-surface-high bg-primary/5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $foundLocation->type->icon() }}" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-text-primary">{{ $foundLocation->name }}</h3>
+                        <p class="text-xs text-text-muted">{{ $foundLocation->type->label() }} @if($foundLocation->building) &middot; {{ $foundLocation->building }} @endif</p>
                     </div>
                 </div>
+            </div>
 
-                {{-- Action Buttons --}}
-                <div class="border-t border-surface-high pt-4 flex gap-3">
-                    @if($foundTask->status->value === 'pending')
-                        <button wire:click="startTask"
-                                class="flex-1 px-4 py-2.5 bg-info text-white rounded-xl text-sm font-semibold hover:bg-info/90 transition-colors shadow-sm">
-                            Start Work
-                        </button>
-                    @elseif($foundTask->status->value === 'in_progress')
-                        <button wire:click="completeTask"
-                                class="flex-1 px-4 py-2.5 bg-success text-white rounded-xl text-sm font-semibold hover:bg-success/90 transition-colors shadow-sm">
-                            Complete Work
-                        </button>
-                    @else
-                        <div class="flex-1 px-4 py-2.5 bg-success/10 text-success rounded-xl text-sm font-semibold text-center">
-                            Task Completed
-                        </div>
-                    @endif
+            {{-- Issues at this location --}}
+            <div class="p-6">
+                <h4 class="text-sm font-semibold text-text-primary mb-4">Your Issues at This Location</h4>
 
-                    <button wire:click="resetScan"
-                            class="px-4 py-2.5 border border-surface-high text-text-secondary rounded-xl text-sm font-semibold hover:bg-surface-low transition-colors">
-                        Scan Again
-                    </button>
-                </div>
+                @if(empty($foundIssues))
+                    <div class="text-center py-8">
+                        <svg class="w-12 h-12 mx-auto text-text-muted mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p class="text-sm text-text-secondary font-medium">No issues assigned to you here</p>
+                        <p class="text-xs text-text-muted mt-1">All clear! No pending issues at this location.</p>
+                    </div>
+                @else
+                    <div class="space-y-4">
+                        @foreach($foundIssues as $issue)
+                            <div class="border border-surface-high rounded-xl p-4">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xs font-mono text-text-muted">{{ $issue['tracking_code'] }}</span>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                                {{ match($issue['status']) {
+                                                    'assigned' => 'bg-info/10 text-info',
+                                                    'in_progress' => 'bg-primary/10 text-primary',
+                                                    default => 'bg-surface-low text-text-muted',
+                                                } }}">
+                                                {{ ucfirst(str_replace('_', ' ', $issue['status'])) }}
+                                            </span>
+                                        </div>
+                                        <p class="text-sm text-text-primary mt-1 line-clamp-2">{{ $issue['description'] }}</p>
+                                        <p class="text-xs text-text-muted mt-2">{{ \Carbon\Carbon::parse($issue['created_at'])->diffForHumans() }}</p>
+                                    </div>
+
+                                    {{-- Action Buttons --}}
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        @if($issue['status'] === 'assigned')
+                                            <button wire:click="startIssue({{ $issue['id'] }})"
+                                                    class="px-3 py-1.5 text-xs font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors">
+                                                Start
+                                            </button>
+                                        @elseif($issue['status'] === 'in_progress')
+                                            <button wire:click="completeIssue({{ $issue['id'] }})"
+                                                    class="px-3 py-1.5 text-xs font-medium text-white bg-success rounded-lg hover:bg-success/90 transition-colors">
+                                                Complete
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
             </div>
         </div>
+
+        {{-- Scan Again Button --}}
+        <button wire:click="resetScan"
+                class="w-full px-4 py-2.5 border border-surface-high text-text-secondary rounded-xl text-sm font-semibold hover:bg-surface-low transition-colors">
+            Scan Another Location
+        </button>
     @endif
 
     {{-- Camera Script --}}
@@ -194,8 +138,14 @@
         @if($showCamera)
             <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
             <script>
-                document.addEventListener('livewire:initialized', () => {
-                    const html5QrCode = new Html5Qrcode("qr-reader");
+                let html5QrCode = null;
+
+                function startCamera() {
+                    if (html5QrCode) {
+                        html5QrCode.stop().catch(() => {});
+                    }
+
+                    html5QrCode = new Html5Qrcode("qr-reader");
                     html5QrCode.start(
                         { facingMode: "environment" },
                         { fps: 10, qrbox: { width: 250, height: 250 } },
@@ -208,7 +158,14 @@
                     ).catch((err) => {
                         console.log("Camera error:", err);
                     });
-                });
+                }
+
+                // Start camera when DOM is ready
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', startCamera);
+                } else {
+                    startCamera();
+                }
             </script>
         @endif
     @endpush

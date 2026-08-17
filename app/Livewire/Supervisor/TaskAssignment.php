@@ -8,6 +8,7 @@ use App\Enums\TaskStatus;
 use App\Models\Location;
 use App\Models\Task;
 use App\Models\User;
+use App\Notifications\TaskAssignedNotification;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -71,7 +72,7 @@ class TaskAssignment extends Component
 
         $location = Location::find($this->taskLocationId);
 
-        Task::create([
+        $task = Task::create([
             'title' => $this->taskTitle,
             'description' => $this->taskDescription,
             'location' => $location ? $location->name : '',
@@ -83,6 +84,11 @@ class TaskAssignment extends Component
             'supervisor_id' => auth()->id(),
             'assigned_to' => $this->taskAssignedTo,
         ]);
+
+        $assignee = User::find($this->taskAssignedTo);
+        if ($assignee) {
+            $assignee->notify(new TaskAssignedNotification($task));
+        }
 
         $this->resetCreateForm();
         session()->flash('success', 'Task created and assigned successfully.');

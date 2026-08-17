@@ -44,7 +44,7 @@ Supervisors convert reports into tasks and assign staff. Staff fix the issue and
 |---|---|---|
 | Admin | `/admin/dashboard` | ✅ Implemented |
 | Supervisor | `/supervisor/dashboard` | ✅ Implemented |
-| Staff | `/staff/dashboard` | ❌ Not implemented |
+| Staff | `/staff/dashboard` | ✅ Implemented |
 | Client | `/client/dashboard` | ❌ Not implemented |
 
 Middleware: `app/Http/Middleware/CheckRole.php`, registered as `role` in `bootstrap/app.php`.

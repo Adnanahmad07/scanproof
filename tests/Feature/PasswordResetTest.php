@@ -43,7 +43,7 @@ class PasswordResetTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors(['email']);
-        Notification::assertNotSent(ResetPassword::class);
+        Notification::assertNothingSent();
     }
 
     /**

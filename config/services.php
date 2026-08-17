@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'whatsapp' => [
+        'url' => env('WHATSAPP_API_URL', 'https://graph.facebook.com/v18.0'),
+        'token' => env('WHATSAPP_API_TOKEN'),
+        'from' => env('WHATSAPP_FROM_NUMBER'),
+    ],
+
 ];

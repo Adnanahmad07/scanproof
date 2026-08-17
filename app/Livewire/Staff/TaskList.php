@@ -4,6 +4,9 @@ namespace App\Livewire\Staff;
 
 use App\Enums\TaskStatus;
 use App\Models\Task;
+use App\Models\User;
+use App\Enums\UserRole;
+use App\Notifications\TaskCompletedNotification;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -26,22 +29,46 @@ class TaskList extends Component
 
     public function startTask($taskId)
     {
-        Task::where('id', $taskId)
+        $task = Task::where('id', $taskId)
             ->where('assigned_to', auth()->id())
             ->where('status', TaskStatus::Pending)
-            ->update(['status' => TaskStatus::InProgress]);
+            ->first();
 
-        session()->flash('success', 'Task started.');
+        if ($task) {
+            $hasBeforePhoto = $task->photos()->where('type', 'before')->exists();
+            if (!$hasBeforePhoto) {
+                session()->flash('error', 'Please upload a before photo first. Open the task to upload.');
+                return;
+            }
+            $task->update(['status' => TaskStatus::InProgress]);
+            session()->flash('success', 'Task started.');
+        }
     }
 
     public function completeTask($taskId)
     {
-        Task::where('id', $taskId)
+        $task = Task::where('id', $taskId)
             ->where('assigned_to', auth()->id())
             ->where('status', TaskStatus::InProgress)
-            ->update(['status' => TaskStatus::Completed]);
+            ->first();
 
-        session()->flash('success', 'Task completed!');
+        if ($task) {
+            $hasAfterPhoto = $task->photos()->where('type', 'after')->exists();
+            if (!$hasAfterPhoto) {
+                session()->flash('error', 'Please upload an after photo first. Open the task to upload.');
+                return;
+            }
+            $task->update(['status' => TaskStatus::Completed]);
+
+            if ($task->supervisor_id) {
+                $supervisor = User::find($task->supervisor_id);
+                if ($supervisor) {
+                    $supervisor->notify(new TaskCompletedNotification($task));
+                }
+            }
+
+            session()->flash('success', 'Task completed!');
+        }
     }
 
     public function render()

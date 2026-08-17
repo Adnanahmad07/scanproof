@@ -96,12 +96,20 @@
                     <span>Dashboard</span>
                 </a>
 
-                <a href="{{ route('supervisor.workers') }}" @click="sidebarOpen = false"
-                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all border-r-2 {{ request()->routeIs('supervisor.workers') ? 'text-primary bg-primary/5 border-r-primary' : 'text-text-secondary hover:text-text-primary hover:bg-surface-container border-r-transparent' }}">
+                <a href="{{ route('supervisor.scan-qr') }}" @click="sidebarOpen = false"
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all border-r-2 {{ request()->routeIs('supervisor.scan-qr*') ? 'text-primary bg-primary/5 border-r-primary' : 'text-text-secondary hover:text-text-primary hover:bg-surface-container border-r-transparent' }}">
                     <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                     </svg>
-                    <span>Workers</span>
+                    <span>Scan QR</span>
+                </a>
+
+                <a href="{{ route('supervisor.issues.index') }}" @click="sidebarOpen = false"
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all border-r-2 {{ request()->routeIs('supervisor.issues*') ? 'text-primary bg-primary/5 border-r-primary' : 'text-text-secondary hover:text-text-primary hover:bg-surface-container border-r-transparent' }}">
+                    <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>Issues</span>
                 </a>
 
                 <a href="{{ route('supervisor.tasks') }}" @click="sidebarOpen = false"
@@ -112,25 +120,21 @@
                     <span>Tasks</span>
                 </a>
 
-                <a href="#" @click="sidebarOpen = false"
-                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-surface-container transition-all border-r-2 border-r-transparent">
+                <a href="{{ route('supervisor.recurring-tasks') }}" @click="sidebarOpen = false"
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all border-r-2 {{ request()->routeIs('supervisor.recurring-tasks') ? 'text-primary bg-primary/5 border-r-primary' : 'text-text-secondary hover:text-text-primary hover:bg-surface-container border-r-transparent' }}">
                     <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
-                    <span>Locations</span>
+                    <span>Recurring</span>
                 </a>
 
-                @if (auth()->user()->canPrintQr())
-                    <a href="{{ route('admin.locations.print', ['all' => 1]) }}" target="_blank" @click="sidebarOpen = false"
-                       class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-surface-container transition-all border-r-2 border-r-transparent">
-                        <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                        </svg>
-                        <span>Print QR Codes</span>
-                    </a>
-                @endif
-
+                <a href="{{ route('supervisor.workers') }}" @click="sidebarOpen = false"
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all border-r-2 {{ request()->routeIs('supervisor.workers') ? 'text-primary bg-primary/5 border-r-primary' : 'text-text-secondary hover:text-text-primary hover:bg-surface-container border-r-transparent' }}">
+                    <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Workers</span>
+                </a>
             </nav>
 
             {{-- Sidebar Footer --}}
@@ -152,20 +156,66 @@
         <div class="flex-1 flex flex-col min-w-0">
             {{-- Desktop Top Bar --}}
             <header class="hidden lg:flex h-20 bg-white border-b border-surface-high items-center justify-between sticky top-0 z-10 px-8">
-                <div>
-                    <h1 class="text-xl font-bold text-text-primary">@yield('page-title', 'Dashboard')</h1>
-                    <p class="text-xs text-text-secondary mt-0.5">@yield('page-subtitle', '')</p>
+                <div class="flex-1 max-w-xl">
+                    <livewire:global-search />
+                </div>
+                <div class="flex items-center gap-3 ml-4">
+                    <livewire:notification-dropdown />
                 </div>
             </header>
 
             {{-- Page Content --}}
             <main class="flex-1 p-4 md:p-6 lg:p-8 xl:px-12 xl:py-8">
-                @yield('content')
+                {{ $slot ?? '' }}@yield('content')
             </main>
         </div>
     </div>
 
     @livewireScripts
+
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script>
+        window.scanQrActive = null;
+
+        window.startScanQr = function() {
+            var el = document.getElementById('qr-reader');
+            if (!el) return;
+            if (window.scanQrActive) { try { window.scanQrActive.clear(); } catch(e) {} window.scanQrActive = null; }
+
+            var scanner = new Html5Qrcode("qr-reader");
+            window.scanQrActive = scanner;
+            var scanned = false;
+
+            scanner.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                function(decodedText) {
+                    if (scanned) return;
+                    scanned = true;
+                    scanner.stop().then(function() {
+                        window.scanQrActive = null;
+                        window.dispatchEvent(new CustomEvent('qr-scanned', { detail: { uuid: decodedText } }));
+                    }).catch(function() {});
+                },
+                function(errorMessage) {}
+            ).catch(function(err) {
+                console.log("Camera error:", err);
+                el.innerHTML = '<div class="w-full h-64 bg-surface-low flex items-center justify-center"><div class="text-center p-4"><p class="text-sm text-text-primary font-medium">Camera access required</p><p class="text-xs text-text-muted mt-1">Please allow camera access</p></div></div>';
+            });
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.getElementById('qr-reader')) {
+                setTimeout(window.startScanQr, 300);
+            }
+        });
+
+        document.addEventListener('livewire:message.processed', function() {
+            if (document.getElementById('qr-reader')) {
+                setTimeout(window.startScanQr, 300);
+            }
+        });
+    </script>
 
     @stack('scripts')
 </body>

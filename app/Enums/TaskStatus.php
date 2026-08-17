@@ -7,7 +7,9 @@ enum TaskStatus: string
     case Pending = 'pending';
     case InProgress = 'in_progress';
     case Completed = 'completed';
+    case Verified = 'verified';
     case Blocked = 'blocked';
+    case Reopened = 'reopened';
 
     public function label(): string
     {
@@ -15,7 +17,9 @@ enum TaskStatus: string
             self::Pending => 'Pending',
             self::InProgress => 'In Progress',
             self::Completed => 'Completed',
+            self::Verified => 'Verified',
             self::Blocked => 'Blocked',
+            self::Reopened => 'Reopened',
         };
     }
 
@@ -25,7 +29,9 @@ enum TaskStatus: string
             self::Pending => 'warning',
             self::InProgress => 'info',
             self::Completed => 'success',
+            self::Verified => 'success',
             self::Blocked => 'error',
+            self::Reopened => 'warning',
         };
     }
 }

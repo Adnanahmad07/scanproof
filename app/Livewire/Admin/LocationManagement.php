@@ -3,7 +3,9 @@
 namespace App\Livewire\Admin;
 
 use App\Enums\LocationType;
+use App\Enums\UserRole;
 use App\Models\Location;
+use App\Models\User;
 use App\Services\LocationImporter;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -29,6 +31,7 @@ class LocationManagement extends Component
     public string $floor = '';
     public string $notes = '';
     public ?int $editId = null;
+    public ?int $supervisorId = null;
 
     // --- CSV ---
     public $csvFile = null;
@@ -49,6 +52,7 @@ class LocationManagement extends Component
             'building' => 'nullable|string|max:255',
             'floor' => 'nullable|string|max:255',
             'notes' => 'nullable|string|max:1000',
+            'supervisorId' => 'nullable|integer|exists:users,id',
         ];
     }
 
@@ -61,7 +65,7 @@ class LocationManagement extends Component
 
     public function getLocationsProperty()
     {
-        return Location::with('children')->roots()->orderBy('name')->get();
+        return Location::with(['children', 'supervisor'])->roots()->orderBy('name')->get();
     }
 
     public function openCreateModal(): void
@@ -100,6 +104,7 @@ class LocationManagement extends Component
             'floor' => $floor,
             'notes' => $this->notes ?: null,
             'created_by' => auth()->id(),
+            'supervisor_id' => $this->supervisorId,
         ]);
 
         $this->showCreateModal = false;
@@ -117,6 +122,7 @@ class LocationManagement extends Component
         $this->building = $location->building ?? '';
         $this->floor = $location->floor ?? '';
         $this->notes = $location->notes ?? '';
+        $this->supervisorId = $location->supervisor_id;
         $this->showEditModal = true;
     }
 
@@ -142,7 +148,8 @@ class LocationManagement extends Component
             'parent_id' => $this->parentId,
             'building' => $building,
             'floor' => $floor,
-            'notes' => $this->notes ?: null,
+            'notes' => $this->notes,
+            'supervisor_id' => $this->supervisorId,
         ]);
 
         $this->showEditModal = false;
@@ -217,6 +224,7 @@ class LocationManagement extends Component
         $this->building = '';
         $this->floor = '';
         $this->notes = '';
+        $this->supervisorId = null;
     }
 
     public function render()
@@ -225,6 +233,7 @@ class LocationManagement extends Component
             'locations' => $this->locations,
             'allLocations' => Location::orderBy('name')->get(),
             'allLocationsCount' => $this->allLocationsCount,
+            'supervisors' => User::where('role', UserRole::Supervisor)->orderBy('name')->get(),
         ]);
     }
 }

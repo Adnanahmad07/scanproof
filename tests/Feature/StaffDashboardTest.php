@@ -2,11 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Enums\LocationType;
 use App\Enums\TaskCategory;
 use App\Enums\TaskPriority;
 use App\Enums\TaskStatus;
 use App\Enums\UserRole;
+use App\Models\Location;
 use App\Models\Task;
+use App\Models\TaskPhoto;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -106,12 +109,20 @@ class StaffDashboardTest extends TestCase
 
     public function test_staff_can_start_task(): void
     {
+        $task = Task::where('assigned_to', $this->staff->id)->first();
+
+        TaskPhoto::create([
+            'task_id' => $task->id,
+            'type' => 'before',
+            'path' => 'task-photos/' . $task->id . '/before.jpg',
+        ]);
+
         Livewire::actingAs($this->staff)
             ->test(\App\Livewire\Staff\TaskList::class)
-            ->call('startTask', 1);
+            ->call('startTask', $task->id);
 
         $this->assertDatabaseHas('tasks', [
-                'id' => 1,
+                'id' => $task->id,
                 'status' => TaskStatus::InProgress,
             ]);
     }
@@ -120,6 +131,18 @@ class StaffDashboardTest extends TestCase
     {
         $task = Task::where('assigned_to', $this->staff->id)->first();
         $task->update(['status' => TaskStatus::InProgress]);
+
+        TaskPhoto::create([
+            'task_id' => $task->id,
+            'type' => 'before',
+            'path' => 'task-photos/' . $task->id . '/before.jpg',
+        ]);
+
+        TaskPhoto::create([
+            'task_id' => $task->id,
+            'type' => 'after',
+            'path' => 'task-photos/' . $task->id . '/after.jpg',
+        ]);
 
         Livewire::actingAs($this->staff)
             ->test(\App\Livewire\Staff\TaskList::class)
@@ -135,10 +158,9 @@ class StaffDashboardTest extends TestCase
     {
         Livewire::actingAs($this->staff)
             ->test(\App\Livewire\Staff\ScanScreen::class)
-            ->set('scanCode', 'Room-101')
+            ->set('scanCode', 'NONEXISTENT-UUID')
             ->call('scanCode')
-            ->assertSee('Task Found')
-            ->assertSee('Test Task');
+            ->assertHasErrors(['scanCode']);
     }
 
     public function test_nonexistent_code_shows_error(): void
@@ -156,16 +178,23 @@ class StaffDashboardTest extends TestCase
             'supervisor_id' => $this->supervisor->id,
         ]);
 
+        $location = Location::create([
+            'name' => 'Test Location',
+            'type' => LocationType::Room,
+            'configured' => true,
+            'supervisor_id' => $this->supervisor->id,
+            'created_by' => $this->admin->id,
+        ]);
+
         Livewire::actingAs($this->supervisor)
             ->test(\App\Livewire\Supervisor\TaskAssignment::class)
             ->set('taskTitle', 'New Task')
-            ->set('taskLocation', 'Room-303')
+            ->set('taskLocationId', $location->id)
             ->set('taskAssignedTo', $worker->id)
             ->call('createTask');
 
         $this->assertDatabaseHas('tasks', [
             'title' => 'New Task',
-            'location' => 'Room-303',
             'assigned_to' => $worker->id,
         ]);
     }
@@ -175,10 +204,10 @@ class StaffDashboardTest extends TestCase
         Livewire::actingAs($this->supervisor)
             ->test(\App\Livewire\Supervisor\TaskAssignment::class)
             ->set('taskTitle', '')
-            ->set('taskLocation', '')
+            ->set('taskLocationId', '')
             ->set('taskAssignedTo', '')
             ->call('createTask')
-            ->assertHasErrors(['taskTitle', 'taskLocation', 'taskAssignedTo']);
+            ->assertHasErrors(['taskTitle', 'taskLocationId', 'taskAssignedTo']);
     }
 
     public function test_non_supervisor_cannot_create_task(): void

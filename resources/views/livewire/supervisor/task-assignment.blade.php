@@ -78,13 +78,25 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <button wire:click="confirmDelete({{ $task->id }})"
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-error text-xs font-semibold hover:bg-error/5 rounded-lg transition-colors">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                    Delete
-                                </button>
+                                <div class="flex items-center justify-end gap-2">
+                                    @if(in_array($task->status->value, ['completed', 'verified']))
+                                        <a href="{{ route('supervisor.task-quality', $task->id) }}"
+                                           class="inline-flex items-center gap-1 px-3 py-1.5 text-primary text-xs font-semibold hover:bg-primary/5 rounded-lg transition-colors">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                            Quality
+                                        </a>
+                                    @endif
+                                    <button wire:click="confirmDelete({{ $task->id }})"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-error text-xs font-semibold hover:bg-error/5 rounded-lg transition-colors">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        Delete
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -151,10 +163,14 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-semibold text-text-primary mb-1.5">Location</label>
-                            <input type="text" wire:model="taskLocation"
-                                   class="w-full px-4 py-2.5 bg-surface-low border border-surface-high rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all text-sm"
-                                   placeholder="e.g. Room 101">
-                            @error('taskLocation') <p class="text-error text-xs mt-1">{{ $message }}</p> @enderror
+                            <select wire:model="taskLocationId"
+                                    class="w-full px-4 py-2.5 bg-surface-low border border-surface-high rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all text-sm">
+                                <option value="">Select location</option>
+                                @foreach($locations as $location)
+                                    <option value="{{ $location->id }}">{{ $location->name }}{{ $location->building ? ' — ' . $location->building : '' }}</option>
+                                @endforeach
+                            </select>
+                            @error('taskLocationId') <p class="text-error text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         <div>

@@ -89,6 +89,7 @@
                             <th class="text-left py-3 px-4 font-medium text-gray-500">Type</th>
                             <th class="text-left py-3 px-4 font-medium text-gray-500">Building</th>
                             <th class="text-left py-3 px-4 font-medium text-gray-500 hidden sm:table-cell">Parent</th>
+                            <th class="text-left py-3 px-4 font-medium text-gray-500 hidden md:table-cell">Supervisor</th>
                             <th class="text-right py-3 px-4 font-medium text-gray-500">Actions</th>
                         </tr>
                     </thead>
@@ -118,6 +119,7 @@
                                 </td>
                                 <td class="py-3 px-4 text-gray-500">{{ $location->building ?? '—' }}</td>
                                 <td class="py-3 px-4 text-gray-500 hidden sm:table-cell">{{ $location->parent?->name ?? '—' }}</td>
+                                <td class="py-3 px-4 text-gray-500 hidden md:table-cell">{{ $location->supervisor?->name ?? '—' }}</td>
                                 <td class="py-3 px-4 text-right">
                                     <div class="flex items-center justify-end gap-1">
                                         <button wire:click="showQr({{ $location->id }})"
@@ -172,6 +174,7 @@
                                     </td>
                                     <td class="py-3 px-4 text-gray-500">{{ $child->building ?? '—' }}</td>
                                     <td class="py-3 px-4 text-gray-500 hidden sm:table-cell">{{ $child->parent?->name ?? '—' }}</td>
+                                    <td class="py-3 px-4 text-gray-500 hidden md:table-cell">{{ $child->supervisor?->name ?? '—' }}</td>
                                     <td class="py-3 px-4 text-right">
                                         <div class="flex items-center justify-end gap-1">
                                             <button wire:click="showQr({{ $child->id }})"

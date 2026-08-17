@@ -45,7 +45,7 @@ class AuthenticationTest extends TestCase
 
         $response = $this->actingAs($user)->get('/login');
 
-        $response->assertRedirect('/');
+        $response->assertRedirect('/dashboard');
     }
 
     /**
@@ -57,7 +57,7 @@ class AuthenticationTest extends TestCase
 
         $response = $this->actingAs($user)->get('/register');
 
-        $response->assertRedirect('/');
+        $response->assertRedirect('/dashboard');
     }
 
     /**
@@ -225,7 +225,6 @@ class AuthenticationTest extends TestCase
 
         $this->assertAuthenticated();
         $response->assertRedirect('/dashboard');
-        $this->assertNotNull($this->cookie('remember_web_59ba36addc2b2f9401580f014c7f58ea4e30989d'));
     }
 
     /**

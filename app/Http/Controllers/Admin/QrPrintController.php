@@ -43,8 +43,18 @@ class QrPrintController
 
     private function resolveLocations(Request $request): \Illuminate\Support\Collection
     {
+        $query = Location::query();
+
+        // Supervisors can only see their own locations
+        if (auth()->user()->isSupervisor()) {
+            $query->where(function ($q) {
+                $q->where('supervisor_id', auth()->id())
+                  ->orWhere('created_by', auth()->id());
+            });
+        }
+
         if ($request->boolean('all')) {
-            return Location::orderBy('name')->get();
+            return $query->orderBy('name')->get();
         }
 
         $ids = $request->validate([
@@ -52,6 +62,6 @@ class QrPrintController
             'ids.*' => 'integer|exists:locations,id',
         ]);
 
-        return Location::whereIn('id', $ids['ids'])->orderBy('name')->get();
+        return $query->whereIn('id', $ids['ids'])->orderBy('name')->get();
     }
 }

@@ -1,5 +1,4 @@
 <div>
-    {{-- Success Flash Message --}}
     @if (session('success'))
         <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
              x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
@@ -8,7 +7,6 @@
         </div>
     @endif
 
-    {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
             <h2 class="text-lg font-bold text-text-primary">My Tasks</h2>
@@ -25,15 +23,14 @@
         </div>
     </div>
 
-    {{-- Tasks List --}}
     <div class="space-y-3">
         @forelse ($tasks as $task)
-            <div class="bg-white rounded-2xl border border-surface-high p-5 hover:shadow-sm transition-shadow">
-                <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                    {{-- Task Info --}}
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 mb-1">
-                            <h3 class="text-sm font-semibold text-text-primary">{{ $task->title }}</h3>
+            <a href="{{ route('staff.tasks.show', $task->id) }}" class="block">
+                <div class="bg-white rounded-2xl border border-surface-high p-5 hover:shadow-sm transition-shadow cursor-pointer">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-1">
+                                <h3 class="text-sm font-semibold text-text-primary">{{ $task->title }}</h3>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold
                                 @if($task->priority->value === 'urgent') bg-error/10 text-error
                                 @elseif($task->priority->value === 'high') bg-warning/10 text-warning
@@ -50,9 +47,46 @@
                         @if($task->description)
                             <p class="text-xs text-text-secondary mt-2 line-clamp-2">{{ $task->description }}</p>
                         @endif
+
+                        {{-- Photo Thumbnails --}}
+                        @php
+                            $beforePhotos = $task->photos()->where('type', 'before')->get();
+                            $afterPhotos = $task->photos()->where('type', 'after')->get();
+                        @endphp
+                        @if($beforePhotos->count() > 0 || $afterPhotos->count() > 0)
+                            <div class="flex items-center gap-3 mt-3">
+                                @if($beforePhotos->count() > 0)
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-[10px] text-info font-medium">Before:</span>
+                                        <div class="flex -space-x-1">
+                                            @foreach($beforePhotos->take(3) as $photo)
+                                                <img src="{{ Storage::url($photo->path) }}" alt="Before"
+                                                     class="w-6 h-6 rounded-md object-cover border border-white">
+                                            @endforeach
+                                            @if($beforePhotos->count() > 3)
+                                                <span class="w-6 h-6 rounded-md bg-surface-low flex items-center justify-center text-[8px] text-text-muted border border-white">+{{ $beforePhotos->count() - 3 }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endif
+                                @if($afterPhotos->count() > 0)
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-[10px] text-success font-medium">After:</span>
+                                        <div class="flex -space-x-1">
+                                            @foreach($afterPhotos->take(3) as $photo)
+                                                <img src="{{ Storage::url($photo->path) }}" alt="After"
+                                                     class="w-6 h-6 rounded-md object-cover border border-white">
+                                            @endforeach
+                                            @if($afterPhotos->count() > 3)
+                                                <span class="w-6 h-6 rounded-md bg-surface-low flex items-center justify-center text-[8px] text-text-muted border border-white">+{{ $afterPhotos->count() - 3 }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
                     </div>
 
-                    {{-- Status + Actions --}}
                     <div class="flex items-center gap-3 shrink-0">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
                             @if($task->status->value === 'pending') bg-warning/10 text-warning
@@ -77,6 +111,7 @@
                     </div>
                 </div>
             </div>
+            </a>
         @empty
             <div class="bg-white rounded-2xl border border-surface-high p-12 text-center">
                 <div class="flex flex-col items-center">
@@ -92,7 +127,6 @@
         @endforelse
     </div>
 
-    {{-- Pagination --}}
     @if ($tasks->hasPages())
         <div class="mt-6">
             {{ $tasks->links() }}
