@@ -65,7 +65,11 @@ class LocationManagement extends Component
 
     public function getLocationsProperty()
     {
-        return Location::with(['children', 'supervisor'])->roots()->orderBy('name')->get();
+        return Location::with(['children', 'supervisor'])
+            ->where('organization_id', auth()->user()->organization_id)
+            ->roots()
+            ->orderBy('name')
+            ->get();
     }
 
     public function openCreateModal(): void
@@ -105,6 +109,7 @@ class LocationManagement extends Component
             'notes' => $this->notes ?: null,
             'created_by' => auth()->id(),
             'supervisor_id' => $this->supervisorId,
+            'organization_id' => auth()->user()->organization_id,
         ]);
 
         $this->showCreateModal = false;
@@ -114,7 +119,11 @@ class LocationManagement extends Component
 
     public function openEditModal(int $id): void
     {
-        $location = Location::findOrFail($id);
+        $location = Location::where('organization_id', auth()->user()->organization_id)->find($id);
+
+        if (!$location) {
+            abort(404, 'Location not found.');
+        }
         $this->editId = $location->id;
         $this->name = $location->name;
         $this->type = $location->type->value;
@@ -130,7 +139,11 @@ class LocationManagement extends Component
     {
         $this->validate();
 
-        $location = Location::findOrFail($this->editId);
+        $location = Location::where('organization_id', auth()->user()->organization_id)->find($this->editId);
+
+        if (!$location) {
+            abort(404, 'Location not found.');
+        }
         $parent = $this->parentId ? Location::find($this->parentId) : null;
         $type = LocationType::from($this->type);
 
@@ -165,7 +178,12 @@ class LocationManagement extends Component
 
     public function deleteLocation(): void
     {
-        $location = Location::findOrFail($this->deleteId);
+        $location = Location::where('organization_id', auth()->user()->organization_id)->find($this->deleteId);
+
+        if (!$location) {
+            abort(404, 'Location not found.');
+        }
+
         $location->delete();
         $this->deleteId = null;
         session()->flash('success', 'Location deleted successfully.');
@@ -197,7 +215,9 @@ class LocationManagement extends Component
 
     public function selectAll(): void
     {
-        $this->selectedForPrint = Location::pluck('id')->toArray();
+        $this->selectedForPrint = Location::where('organization_id', auth()->user()->organization_id)
+            ->pluck('id')
+            ->toArray();
     }
 
     public function clearSelection(): void
@@ -207,13 +227,15 @@ class LocationManagement extends Component
 
     public function showQr(int $id): void
     {
-        $this->qrLocation = Location::with('parent')->find($id);
+        $this->qrLocation = Location::with('parent')
+            ->where('organization_id', auth()->user()->organization_id)
+            ->find($id);
         $this->showQrModal = true;
     }
 
     public function getAllLocationsCountProperty(): int
     {
-        return Location::count();
+        return Location::where('organization_id', auth()->user()->organization_id)->count();
     }
 
     private function resetForm(): void
@@ -231,9 +253,14 @@ class LocationManagement extends Component
     {
         return view('livewire.admin.location-management', [
             'locations' => $this->locations,
-            'allLocations' => Location::orderBy('name')->get(),
+            'allLocations' => Location::where('organization_id', auth()->user()->organization_id)
+                ->orderBy('name')
+                ->get(),
             'allLocationsCount' => $this->allLocationsCount,
-            'supervisors' => User::where('role', UserRole::Supervisor)->orderBy('name')->get(),
+            'supervisors' => User::where('role', UserRole::Supervisor)
+                ->where('organization_id', auth()->user()->organization_id)
+                ->orderBy('name')
+                ->get(),
         ]);
     }
 }

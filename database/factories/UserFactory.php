@@ -31,6 +31,7 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'organization_id' => null,
         ];
     }
 
@@ -69,6 +70,13 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'can_print_qr' => true,
+        ]);
+    }
+
+    public function forOrganization(int $organizationId): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'organization_id' => $organizationId,
         ]);
     }
 }

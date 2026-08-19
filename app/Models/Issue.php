@@ -25,6 +25,7 @@ class Issue extends Model
         'assigned_to',
         'reported_by',
         'resolved_at',
+        'organization_id',
     ];
 
     protected function casts(): array
@@ -86,14 +87,38 @@ class Issue extends Model
 
     public function scopeForSupervisor(Builder $query, int $userId): Builder
     {
-        return $query->whereHas('location', function ($q) use ($userId) {
-            $q->where('supervisor_id', $userId)
-              ->orWhereHas('parent', function ($pq) use ($userId) {
-                  $pq->where('supervisor_id', $userId)
-                     ->orWhereHas('parent', function ($ppq) use ($userId) {
-                         $ppq->where('supervisor_id', $userId);
-                     });
-              });
+        // Get worker IDs for this supervisor (family tree) within same org
+        $workerIds = User::where('supervisor_id', $userId)
+            ->where('organization_id', auth()->user()->organization_id)
+            ->pluck('id')
+            ->toArray();
+
+        return $query->where(function ($q) use ($userId, $workerIds) {
+            // 1. Issues at locations directly assigned to this supervisor
+            $q->whereHas('location', function ($loc) use ($userId) {
+                $loc->where('supervisor_id', $userId)
+                    ->orWhereHas('parent', function ($parent) use ($userId) {
+                        $parent->where('supervisor_id', $userId)
+                            ->orWhereHas('parent', function ($grandparent) use ($userId) {
+                                $grandparent->where('supervisor_id', $userId);
+                            });
+                    });
+            });
+
+            // 2. Issues at locations created by this supervisor
+            $q->orWhereHas('location', function ($loc) use ($userId) {
+                $loc->where('created_by', $userId);
+            });
+
+            // 3. Issues assigned to this supervisor's workers
+            if (!empty($workerIds)) {
+                $q->orWhereIn('assigned_to', $workerIds);
+            }
+
+            // 4. Issues reported by this supervisor's workers
+            if (!empty($workerIds)) {
+                $q->orWhereIn('reported_by', $workerIds);
+            }
         });
     }
 

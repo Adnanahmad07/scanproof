@@ -25,6 +25,24 @@
     <form method="POST" action="{{ route('register') }}" class="space-y-5">
         @csrf
 
+        {{-- Organization Name --}}
+        <div>
+            <label for="organization_name" class="block text-sm font-medium text-text-primary mb-1.5">Organization Name</label>
+            <input
+                type="text"
+                id="organization_name"
+                name="organization_name"
+                value="{{ old('organization_name') }}"
+                required
+                autofocus
+                class="w-full px-4 py-3 border border-surface-high rounded-xl bg-surface-low focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-text-muted @error('organization_name') border-error focus:border-error focus:ring-error/10 @enderror"
+                placeholder="e.g. City Hospital, Green Valley Apartments"
+            >
+            @error('organization_name')
+                <p class="text-sm text-error mt-1.5">{{ $message }}</p>
+            @enderror
+        </div>
+
         {{-- Name --}}
         <div>
             <label for="name" class="block text-sm font-medium text-text-primary mb-1.5">Full Name</label>
@@ -34,7 +52,6 @@
                 name="name"
                 value="{{ old('name') }}"
                 required
-                autofocus
                 class="w-full px-4 py-3 border border-surface-high rounded-xl bg-surface-low focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-text-muted @error('name') border-error focus:border-error focus:ring-error/10 @enderror"
                 placeholder="John Doe"
             >

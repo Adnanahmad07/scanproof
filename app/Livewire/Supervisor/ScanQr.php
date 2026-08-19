@@ -14,7 +14,8 @@ class ScanQr extends Component
 
     public function getLocationsProperty()
     {
-        return Location::where('supervisor_id', auth()->id())
+        return Location::where('organization_id', auth()->user()->organization_id)
+            ->where('supervisor_id', auth()->id())
             ->configured()
             ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
             ->orderBy('building')

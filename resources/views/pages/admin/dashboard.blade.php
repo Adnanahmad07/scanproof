@@ -15,7 +15,10 @@
 
         {{-- Welcome Banner --}}
         <div class="bg-gradient-to-r from-primary to-primary-dark rounded-2xl p-6 text-white">
-            <h2 class="text-xl font-bold">Welcome back, {{ auth()->user()->name }}!</h2>
+            @if(auth()->user()->organization)
+                <p class="text-white/90 text-sm font-semibold tracking-wide uppercase mb-1">{{ auth()->user()->organization->name }}</p>
+            @endif
+            <h2 class="text-2xl font-extrabold tracking-tight">Welcome back, {{ auth()->user()->name }}!</h2>
             <p class="mt-1 text-white/80 text-sm">Here's what's happening with your facilities today.</p>
         </div>
 

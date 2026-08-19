@@ -36,6 +36,7 @@ class Task extends Model
         'assigned_to',
         'issue_id',
         'recurring_task_id',
+        'organization_id',
     ];
 
     protected function casts(): array

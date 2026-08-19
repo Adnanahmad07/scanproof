@@ -24,16 +24,13 @@ class AuthenticationTest extends TestCase
     }
 
     /**
-     * Test that the register page returns a successful response.
+     * Test that the register page is disabled (returns 404).
      */
-    public function test_register_page_is_accessible(): void
+    public function test_register_page_is_disabled(): void
     {
         $response = $this->get('/register');
 
-        $this->assertTrue(
-            in_array($response->status(), [200, 500]),
-            'Register page should be accessible (returns 200 or 500 due to CSS/Vite)'
-        );
+        $response->assertStatus(404);
     }
 
     /**
@@ -49,7 +46,7 @@ class AuthenticationTest extends TestCase
     }
 
     /**
-     * Test that authenticated users are redirected from register page.
+     * Test that authenticated users get 404 on register page (registration disabled).
      */
     public function test_authenticated_users_redirected_from_register(): void
     {
@@ -57,13 +54,13 @@ class AuthenticationTest extends TestCase
 
         $response = $this->actingAs($user)->get('/register');
 
-        $response->assertRedirect('/dashboard');
+        $response->assertStatus(404);
     }
 
     /**
-     * Test user registration with valid data.
+     * Test that registration endpoint is disabled (returns 404).
      */
-    public function test_user_can_register_with_valid_data(): void
+    public function test_registration_is_disabled(): void
     {
         $response = $this->post('/register', [
             'name' => 'Test User',
@@ -72,16 +69,11 @@ class AuthenticationTest extends TestCase
             'password_confirmation' => 'Password1234!',
         ]);
 
-        $this->assertDatabaseHas('users', [
-            'email' => 'test@example.com',
-            'name' => 'Test User',
-        ]);
-
-        $response->assertRedirect('/dashboard');
+        $response->assertStatus(404);
     }
 
     /**
-     * Test registration fails with duplicate email.
+     * Test that registration with duplicate email returns 404 (registration disabled).
      */
     public function test_registration_fails_with_duplicate_email(): void
     {
@@ -94,11 +86,11 @@ class AuthenticationTest extends TestCase
             'password_confirmation' => 'Password1234!',
         ]);
 
-        $response->assertSessionHasErrors(['email']);
+        $response->assertStatus(404);
     }
 
     /**
-     * Test registration fails with invalid password confirmation.
+     * Test that registration with mismatched passwords returns 404 (registration disabled).
      */
     public function test_registration_fails_with_mismatched_passwords(): void
     {
@@ -109,11 +101,11 @@ class AuthenticationTest extends TestCase
             'password_confirmation' => 'DifferentPassword',
         ]);
 
-        $response->assertSessionHasErrors(['password']);
+        $response->assertStatus(404);
     }
 
     /**
-     * Test registration fails with weak password.
+     * Test that registration with weak password returns 404 (registration disabled).
      */
     public function test_registration_fails_with_weak_password(): void
     {
@@ -124,7 +116,7 @@ class AuthenticationTest extends TestCase
             'password_confirmation' => 'weak',
         ]);
 
-        $response->assertSessionHasErrors(['password']);
+        $response->assertStatus(404);
     }
 
     /**

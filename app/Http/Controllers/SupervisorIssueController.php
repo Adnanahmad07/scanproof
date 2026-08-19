@@ -15,6 +15,7 @@ class SupervisorIssueController extends Controller
     public function index()
     {
         $issues = Issue::forSupervisor(auth()->id())
+            ->where('organization_id', auth()->user()->organization_id)
             ->with(['location', 'assignee', 'task'])
             ->latest()
             ->get();
@@ -31,14 +32,19 @@ class SupervisorIssueController extends Controller
 
     public function assign(Request $request, Issue $issue)
     {
+        abort_unless($issue->organization_id === auth()->user()->organization_id, 403, 'Unauthorized.');
+
         $request->validate([
             'assigned_to' => 'required|exists:users,id',
         ]);
 
+        $assignee = User::find($request->assigned_to);
+        if (!$assignee || $assignee->organization_id !== auth()->user()->organization_id) {
+            abort(403, 'Unauthorized.');
+        }
+
         $issue->transitionTo('assigned', auth()->id());
         $issue->update(['assigned_to' => $request->assigned_to]);
-
-        $assignee = User::find($request->assigned_to);
         if ($assignee) {
             $assignee->notify(new IssueAssignedNotification($issue));
         }
@@ -48,6 +54,7 @@ class SupervisorIssueController extends Controller
 
     public function convertToTask(Request $request, Issue $issue)
     {
+        abort_unless($issue->organization_id === auth()->user()->organization_id, 403, 'Unauthorized.');
         abort_unless($issue->location && $this->canManage($issue->location, auth()->id()), 403);
 
         if ($issue->task) {
@@ -82,6 +89,7 @@ class SupervisorIssueController extends Controller
             'assigned_to' => $issue->assigned_to,
             'issue_id' => $issue->id,
             'due_date' => $request->due_date,
+            'organization_id' => auth()->user()->organization_id,
         ]);
 
         return back()->with('success', 'Issue converted to task successfully. Task #' . $task->id . ' created.');
@@ -89,6 +97,8 @@ class SupervisorIssueController extends Controller
 
     public function updateStatus(Request $request, Issue $issue)
     {
+        abort_unless($issue->organization_id === auth()->user()->organization_id, 403, 'Unauthorized.');
+
         $request->validate([
             'status' => 'required|in:reported,assigned,in_progress,resolved',
         ]);
@@ -100,6 +110,7 @@ class SupervisorIssueController extends Controller
 
     public function reject(Request $request, Issue $issue)
     {
+        abort_unless($issue->organization_id === auth()->user()->organization_id, 403, 'Unauthorized.');
         abort_unless($issue->location && $this->canManage($issue->location, auth()->id()), 403);
 
         $request->validate([

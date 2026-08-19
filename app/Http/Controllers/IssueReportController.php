@@ -55,6 +55,7 @@ class IssueReportController extends Controller
             'description' => $validated['description'],
             'photo_path' => $photoPath,
             'reported_by' => auth()->id(),
+            'organization_id' => $location->organization_id,
         ]);
 
         $this->notifySupervisor($location, $issue);
@@ -79,19 +80,25 @@ class IssueReportController extends Controller
     {
         // 1. Check this location
         if ($location->supervisor_id) {
-            return User::find($location->supervisor_id);
+            return User::where('id', $location->supervisor_id)
+                ->where('organization_id', $location->organization_id)
+                ->first();
         }
 
         // 2. Walk up the hierarchy
         $current = $location->parent;
         while ($current) {
             if ($current->supervisor_id) {
-                return User::find($current->supervisor_id);
+                return User::where('id', $current->supervisor_id)
+                    ->where('organization_id', $location->organization_id)
+                    ->first();
             }
             $current = $current->parent;
         }
 
-        // 3. Fallback: notify all admins
-        return User::where('role', UserRole::Admin)->first();
+        // 3. Fallback: notify the org admin
+        return User::where('role', UserRole::Admin)
+            ->where('organization_id', $location->organization_id)
+            ->first();
     }
 }

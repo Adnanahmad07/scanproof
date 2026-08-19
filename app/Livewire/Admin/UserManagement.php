@@ -21,6 +21,8 @@ class UserManagement extends Component
     public $createName = '';
     public $createEmail = '';
     public $createPassword = '';
+    public $createPassword_confirmation = '';
+    public ?int $createSupervisorId = null;
 
     public $editName = '';
     public $editEmail = '';
@@ -31,6 +33,7 @@ class UserManagement extends Component
         'createName' => 'required|string|max:255',
         'createEmail' => 'required|email|max:255|unique:users,email',
         'createPassword' => 'required|string|min:8|confirmed',
+        'createSupervisorId' => 'nullable|integer|exists:users,id',
         'editName' => 'required|string|max:255',
         'editEmail' => 'required|email|max:255',
         'editRole' => 'required|in:admin,supervisor,staff,client',
@@ -54,7 +57,9 @@ class UserManagement extends Component
 
     public function getUsersProperty()
     {
-        return User::latest()->paginate(15);
+        return User::where('organization_id', auth()->user()->organization_id)
+            ->latest()
+            ->paginate(15);
     }
 
     public function openCreateModal()
@@ -74,6 +79,8 @@ class UserManagement extends Component
         $this->createName = '';
         $this->createEmail = '';
         $this->createPassword = '';
+        $this->createPassword_confirmation = '';
+        $this->createSupervisorId = null;
         $this->resetValidation();
     }
 
@@ -86,12 +93,14 @@ class UserManagement extends Component
             'email' => strtolower($this->createEmail),
             'password' => Hash::make($this->createPassword),
             'role' => UserRole::Staff,
+            'supervisor_id' => $this->createSupervisorId,
+            'organization_id' => auth()->user()->organization_id,
             'is_active' => true,
             'email_verified_at' => now(),
         ]);
 
         $this->closeCreateModal();
-        session()->flash('success', 'User created successfully.');
+        session()->flash('success', 'Worker added successfully.');
     }
 
     public function openEditModal(int $userId)
@@ -122,6 +131,7 @@ class UserManagement extends Component
         $user = User::findOrFail($this->editingUserId);
 
         $existingUser = User::where('email', strtolower($this->editEmail))
+            ->where('organization_id', auth()->user()->organization_id)
             ->where('id', '!=', $this->editingUserId)
             ->first();
 
@@ -198,6 +208,10 @@ class UserManagement extends Component
     {
         return view('livewire.admin.user-management', [
             'users' => $this->users,
+            'supervisors' => User::where('role', UserRole::Supervisor)
+                ->where('organization_id', auth()->user()->organization_id)
+                ->orderBy('name')
+                ->get(),
         ]);
     }
 }

@@ -30,13 +30,16 @@ class SupervisorManagement extends Component
     public function getSupervisorsProperty()
     {
         return User::where('role', 'supervisor')
+            ->where('organization_id', auth()->user()->organization_id)
             ->latest()
             ->paginate(10);
     }
 
     public function getInvitationsProperty()
     {
-        return SupervisorInvitation::latest()->paginate(10);
+        return SupervisorInvitation::where('organization_id', auth()->user()->organization_id)
+            ->latest()
+            ->paginate(10);
     }
 
     public function invite()
@@ -45,12 +48,15 @@ class SupervisorManagement extends Component
 
         $email = strtolower($this->inviteEmail);
 
-        if (User::where('email', $email)->exists()) {
+        if (User::where('email', $email)
+            ->where('organization_id', auth()->user()->organization_id)
+            ->exists()) {
             $this->addError('inviteEmail', 'A user with this email already exists.');
             return;
         }
 
         $existingInvitation = SupervisorInvitation::where('email', $email)
+            ->where('organization_id', auth()->user()->organization_id)
             ->pending()
             ->exists();
 
@@ -63,6 +69,7 @@ class SupervisorManagement extends Component
             'email' => $email,
             'token' => SupervisorInvitation::generateToken(),
             'invited_by' => auth()->id(),
+            'organization_id' => auth()->user()->organization_id,
             'expires_at' => now()->addHours(48),
             'status' => 'pending',
         ]);
@@ -77,7 +84,12 @@ class SupervisorManagement extends Component
 
     public function cancelInvitation($invitationId)
     {
-        $invitation = SupervisorInvitation::findOrFail($invitationId);
+        $invitation = SupervisorInvitation::where('organization_id', auth()->user()->organization_id)
+            ->find($invitationId);
+
+        if (!$invitation) {
+            abort(404, 'Invitation not found.');
+        }
 
         if ($invitation->status === 'pending') {
             $invitation->markExpired();
@@ -93,9 +105,16 @@ class SupervisorManagement extends Component
     public function deleteSupervisor()
     {
         if ($this->supervisorToDelete) {
-            User::where('id', $this->supervisorToDelete)
+            $user = User::where('id', $this->supervisorToDelete)
                 ->where('role', 'supervisor')
-                ->update(['role' => 'staff']);
+                ->where('organization_id', auth()->user()->organization_id)
+                ->first();
+
+            if (!$user) {
+                abort(404, 'Supervisor not found.');
+            }
+
+            $user->update(['role' => 'staff']);
 
             $this->supervisorToDelete = null;
             session()->flash('success', 'Supervisor demoted to staff successfully.');
@@ -104,7 +123,10 @@ class SupervisorManagement extends Component
 
     public function togglePrintPermission(int $userId): void
     {
-        $user = User::where('id', $userId)->where('role', 'supervisor')->firstOrFail();
+        $user = User::where('id', $userId)
+            ->where('role', 'supervisor')
+            ->where('organization_id', auth()->user()->organization_id)
+            ->firstOrFail();
         $user->update(['can_print_qr' => !$user->can_print_qr]);
 
         session()->flash('success', "Print permission " . ($user->can_print_qr ? 'granted' : 'revoked') . " for {$user->name}.");

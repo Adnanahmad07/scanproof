@@ -146,7 +146,7 @@
                                                         <select name="assigned_to" required
                                                                 class="w-full px-4 py-2.5 bg-surface-low border border-surface-high rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary mb-4">
                                                             <option value="">Select worker...</option>
-                                                            @foreach (\App\Models\User::where('role', 'staff')->orderBy('name')->get() as $worker)
+                                                            @foreach (\App\Models\User::where('role', 'staff')->where('organization_id', auth()->user()->organization_id)->orderBy('name')->get() as $worker)
                                                                 <option value="{{ $worker->id }}">{{ $worker->name }}</option>
                                                             @endforeach
                                                         </select>

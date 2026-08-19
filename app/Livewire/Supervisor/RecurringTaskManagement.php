@@ -39,12 +39,15 @@ class RecurringTaskManagement extends Component
 
     public function getWorkersProperty()
     {
-        return User::where('supervisor_id', auth()->id())->get();
+        return User::where('supervisor_id', auth()->id())
+            ->where('organization_id', auth()->user()->organization_id)
+            ->get();
     }
 
     public function getLocationsProperty()
     {
-        return Location::orderBy('building')
+        return Location::where('organization_id', auth()->user()->organization_id)
+            ->orderBy('building')
             ->orderBy('floor')
             ->orderBy('name')
             ->get();
@@ -53,6 +56,7 @@ class RecurringTaskManagement extends Component
     public function getRecurringTasksProperty()
     {
         return RecurringTask::where('supervisor_id', auth()->id())
+            ->where('organization_id', auth()->user()->organization_id)
             ->with(['assignee', 'location'])
             ->latest()
             ->get();
@@ -103,6 +107,7 @@ class RecurringTaskManagement extends Component
             'day_of_month' => $this->frequency === 'monthly' ? $this->dayOfMonth : null,
             'assigned_to' => $this->assignedTo,
             'supervisor_id' => auth()->id(),
+            'organization_id' => auth()->user()->organization_id,
         ];
 
         if ($this->editingId) {

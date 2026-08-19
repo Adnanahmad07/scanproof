@@ -47,8 +47,23 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         ->name('supervisors.index');
     Route::post('supervisors/invite', [SupervisorInvitationController::class, 'store'])
         ->name('supervisors.invite');
-    Route::delete('supervisors/{invitation}', [SupervisorInvitationController::class, 'destroy'])
-        ->name('supervisors.cancel');
+    Route::delete('supervisors/{invitation}', function (\App\Models\SupervisorInvitation $invitation) {
+        if ($invitation->organization_id !== auth()->user()->organization_id) {
+            abort(403, 'Unauthorized.');
+        }
+
+        if ($invitation->status !== 'pending') {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'invitation' => 'Only pending invitations can be cancelled.',
+            ]);
+        }
+
+        $invitation->markExpired();
+
+        return redirect()
+            ->route('admin.supervisors.index')
+            ->with('success', 'Invitation cancelled successfully.');
+    })->name('supervisors.cancel');
 
     Route::get('users', UserManagement::class)
         ->name('users.index');
@@ -65,6 +80,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
             'email' => strtolower($data['createEmail']),
             'password' => \Illuminate\Support\Facades\Hash::make($data['createPassword']),
             'role' => \App\Enums\UserRole::Staff,
+            'organization_id' => auth()->user()->organization_id,
             'is_active' => true,
             'email_verified_at' => now(),
         ]);
@@ -73,6 +89,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     })->name('users.store');
 
     Route::post('users/{user}/update', function (User $user) {
+        if ($user->organization_id !== auth()->user()->organization_id) {
+            abort(403, 'Unauthorized.');
+        }
+
         $data = request()->validate([
             'editName' => 'required|string|max:255',
             'editEmail' => 'required|email|max:255',
@@ -85,6 +105,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         }
 
         $existing = User::where('email', strtolower($data['editEmail']))
+            ->where('organization_id', auth()->user()->organization_id)
             ->where('id', '!=', $user->id)
             ->first();
 
@@ -103,6 +124,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     })->name('users.update');
 
     Route::post('users/{user}/toggle-active', function (User $user) {
+        if ($user->organization_id !== auth()->user()->organization_id) {
+            abort(403, 'Unauthorized.');
+        }
+
         if ($user->id === auth()->id()) {
             return back()->with('error', 'You cannot deactivate your own account.');
         }
@@ -133,7 +158,6 @@ Route::middleware(['auth'])->group(function () {
         ->name('admin.locations.pdf');
 });
 
-// Dashboard (handles role-based redirect)
 Route::get('/dashboard', function () {
     $user = auth()->user();
 
@@ -190,6 +214,7 @@ Route::middleware(['auth', 'role:supervisor'])->prefix('supervisor')->name('supe
         \App\Models\Task::create(array_merge($data, [
             'supervisor_id' => auth()->id(),
             'status' => \App\Enums\TaskStatus::Pending,
+            'organization_id' => auth()->user()->organization_id,
         ]));
 
         return back()->with('success', 'Task created successfully.');

@@ -20,15 +20,18 @@ class HealthScoreService
      */
     public function calculate(): int
     {
-        $totalTasks = Task::count();
-        $completedTasks = Task::whereIn('status', [TaskStatus::Completed, TaskStatus::Verified])->count();
-        $overdueTasks = Task::where('due_date', '<', now())
+        $orgId = auth()->user()->organization_id;
+
+        $totalTasks = Task::where('organization_id', $orgId)->count();
+        $completedTasks = Task::where('organization_id', $orgId)->whereIn('status', [TaskStatus::Completed, TaskStatus::Verified])->count();
+        $overdueTasks = Task::where('organization_id', $orgId)
+            ->where('due_date', '<', now())
             ->whereNotIn('status', [TaskStatus::Completed, TaskStatus::Verified])
             ->count();
 
-        $totalIssues = Issue::where('status', '!=', 'rejected')->count();
-        $resolvedIssues = Issue::where('status', 'resolved')->count();
-        $openIssues = Issue::whereNotIn('status', ['resolved', 'rejected'])->count();
+        $totalIssues = Issue::where('organization_id', $orgId)->where('status', '!=', 'rejected')->count();
+        $resolvedIssues = Issue::where('organization_id', $orgId)->where('status', 'resolved')->count();
+        $openIssues = Issue::where('organization_id', $orgId)->whereNotIn('status', ['resolved', 'rejected'])->count();
 
         // Task completion rate (40%)
         $taskScore = $totalTasks > 0 ? ($completedTasks / $totalTasks) * 40 : 40;

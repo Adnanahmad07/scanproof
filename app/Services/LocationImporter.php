@@ -44,8 +44,9 @@ class LocationImporter
         $skipped = [];
         $errors = [];
         $pendingByName = [];
+        $orgId = $admin->organization_id;
 
-        $result = DB::transaction(function () use ($rows, $headers, $admin, &$created, &$skipped, &$errors, &$pendingByName) {
+        $result = DB::transaction(function () use ($rows, $headers, $admin, $orgId, &$created, &$skipped, &$errors, &$pendingByName) {
             foreach ($rows as $index => $row) {
                 $rowNum = $index + 2; // +1 for 1-based, +1 for header row
 
@@ -75,7 +76,9 @@ class LocationImporter
                     if (isset($pendingByName[$parentKey])) {
                         $parentId = $pendingByName[$parentKey];
                     } else {
-                        $existingParent = Location::whereRaw('lower(name) = lower(?)', [$parentName])->first();
+                        $existingParent = Location::whereRaw('lower(name) = lower(?)', [$parentName])
+                            ->where('organization_id', $orgId)
+                            ->first();
                         if (!$existingParent) {
                             $skipped[] = ['row' => $rowNum, 'reason' => "Parent '{$parentName}' not found."];
                             continue;
@@ -93,6 +96,7 @@ class LocationImporter
                 $existsInDb = Location::whereRaw('lower(name) = lower(?)', [$name])
                     ->where('type', $type)
                     ->where('parent_id', $parentId)
+                    ->where('organization_id', $orgId)
                     ->exists();
 
                 if ($existsInDb) {
@@ -108,6 +112,7 @@ class LocationImporter
                     'floor' => $floor,
                     'notes' => $notes,
                     'created_by' => $admin->id,
+                    'organization_id' => $orgId,
                 ]);
 
                 $pendingByName[$lookupKey] = $location->id;

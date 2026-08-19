@@ -94,10 +94,11 @@ class LocationQrManagement extends Component
 
     protected function scopedQuery()
     {
-        return Location::where(function ($query) {
-            $query->where('supervisor_id', auth()->id())
-                  ->orWhere('created_by', auth()->id());
-        });
+        return Location::where('organization_id', auth()->user()->organization_id)
+            ->where(function ($query) {
+                $query->where('supervisor_id', auth()->id())
+                      ->orWhere('created_by', auth()->id());
+            });
     }
 
     public function showPreview(int $locationId): void
@@ -160,6 +161,7 @@ class LocationQrManagement extends Component
             'notes' => $this->newNotes,
             'created_by' => auth()->id(),
             'supervisor_id' => auth()->id(),
+            'organization_id' => auth()->user()->organization_id,
         ]);
 
         session()->flash('success', '"' . $this->newName . '" created successfully.');

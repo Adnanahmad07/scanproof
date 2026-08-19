@@ -20,17 +20,24 @@ class SendDailyReport implements ShouldQueue
 
     public function handle(AnalyticsService $analytics, HealthScoreService $healthScore): void
     {
-        $reportData = $analytics->getReportData(
-            now()->subDay()->format('Y-m-d'),
-            now()->format('Y-m-d')
-        );
-
-        $score = $healthScore->calculate();
-
-        $admins = User::where('role', 'admin')->get();
+        $admins = User::where('role', 'admin')
+            ->whereNotNull('organization_id')
+            ->get();
 
         foreach ($admins as $admin) {
+            // Set the authenticated user context for organization-scoped services
+            auth()->login($admin);
+
+            $reportData = $analytics->getReportData(
+                now()->subDay()->format('Y-m-d'),
+                now()->format('Y-m-d')
+            );
+
+            $score = $healthScore->calculate();
+
             $admin->notify(new DailyReportNotification($reportData, $score));
         }
+
+        auth()->logout();
     }
 }

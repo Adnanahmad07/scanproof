@@ -34,18 +34,28 @@ class GlobalSearch extends Component
     private function performSearch(): void
     {
         $q = $this->query;
-        $userId = auth()->id();
-        $role = auth()->user()->role->value;
+        $user = auth()->user();
+        $userId = $user->id;
+        $role = $user->role->value;
+        $orgId = $user->organization_id;
 
         $results = [];
 
-        // Search Tasks
-        $tasks = Task::where(function ($query) use ($q) {
-            $query->where('title', 'like', "%{$q}%")
-                  ->orWhere('location', 'like', "%{$q}%");
-        })->limit(5)->get();
+        // Search Tasks — role-based filtering
+        $tasks = Task::where('organization_id', $orgId)
+            ->where(function ($query) use ($q) {
+                $query->where('title', 'like', "%{$q}%")
+                      ->orWhere('location', 'like', "%{$q}%");
+            });
 
-        foreach ($tasks as $task) {
+        if ($role === 'supervisor') {
+            $tasks->where('supervisor_id', $userId);
+        } elseif ($role === 'staff') {
+            $tasks->where('assigned_to', $userId);
+        }
+        // Admin: no additional filter (sees all)
+
+        foreach ($tasks->limit(5)->get() as $task) {
             $results[] = [
                 'type' => 'task',
                 'icon' => 'task',
@@ -55,13 +65,21 @@ class GlobalSearch extends Component
             ];
         }
 
-        // Search Issues
-        $issues = Issue::where(function ($query) use ($q) {
-            $query->where('description', 'like', "%{$q}%")
-                  ->orWhere('tracking_code', 'like', "%{$q}%");
-        })->limit(5)->get();
+        // Search Issues — role-based filtering
+        $issues = Issue::where('organization_id', $orgId)
+            ->where(function ($query) use ($q) {
+                $query->where('description', 'like', "%{$q}%")
+                      ->orWhere('tracking_code', 'like', "%{$q}%");
+            });
 
-        foreach ($issues as $issue) {
+        if ($role === 'supervisor') {
+            $issues->forSupervisor($userId);
+        } elseif ($role === 'staff') {
+            $issues->forStaff($userId);
+        }
+        // Admin: no additional filter (sees all)
+
+        foreach ($issues->limit(5)->get() as $issue) {
             $results[] = [
                 'type' => 'issue',
                 'icon' => 'issue',
@@ -71,14 +89,23 @@ class GlobalSearch extends Component
             ];
         }
 
-        // Search Locations
-        $locations = Location::where(function ($query) use ($q) {
-            $query->where('name', 'like', "%{$q}%")
-                  ->orWhere('building', 'like', "%{$q}%")
-                  ->orWhere('floor', 'like', "%{$q}%");
-        })->limit(5)->get();
+        // Search Locations — role-based filtering
+        $locations = Location::where('organization_id', $orgId)
+            ->where(function ($query) use ($q) {
+                $query->where('name', 'like', "%{$q}%")
+                      ->orWhere('building', 'like', "%{$q}%")
+                      ->orWhere('floor', 'like', "%{$q}%");
+            });
 
-        foreach ($locations as $location) {
+        if ($role === 'supervisor') {
+            $locations->forSupervisor($userId);
+        } elseif ($role === 'staff') {
+            // Staff don't manage locations — only show locations from their assigned tasks
+            $locations->whereIn('id', Task::where('assigned_to', $userId)->pluck('location_id'));
+        }
+        // Admin: no additional filter (sees all)
+
+        foreach ($locations->limit(5)->get() as $location) {
             $results[] = [
                 'type' => 'location',
                 'icon' => 'location',
@@ -90,10 +117,11 @@ class GlobalSearch extends Component
 
         // Search Users (admin only)
         if ($role === 'admin') {
-            $users = User::where(function ($query) use ($q) {
-                $query->where('name', 'like', "%{$q}%")
-                      ->orWhere('email', 'like', "%{$q}%");
-            })->limit(5)->get();
+            $users = User::where('organization_id', $orgId)
+                ->where(function ($query) use ($q) {
+                    $query->where('name', 'like', "%{$q}%")
+                          ->orWhere('email', 'like', "%{$q}%");
+                })->limit(5)->get();
 
             foreach ($users as $user) {
                 $results[] = [

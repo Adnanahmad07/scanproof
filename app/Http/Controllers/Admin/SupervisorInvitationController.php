@@ -25,13 +25,16 @@ class SupervisorInvitationController extends Controller
 
         $email = strtolower($request->email);
 
-        if (User::where('email', $email)->exists()) {
+        if (User::where('email', $email)
+            ->where('organization_id', auth()->user()->organization_id)
+            ->exists()) {
             throw ValidationException::withMessages([
                 'email' => 'A user with this email already exists.',
             ]);
         }
 
         $existingInvitation = SupervisorInvitation::where('email', $email)
+            ->where('organization_id', auth()->user()->organization_id)
             ->pending()
             ->exists();
 
@@ -45,6 +48,7 @@ class SupervisorInvitationController extends Controller
             'email' => $email,
             'token' => SupervisorInvitation::generateToken(),
             'invited_by' => auth()->id(),
+            'organization_id' => auth()->user()->organization_id,
             'expires_at' => now()->addHours(48),
             'status' => 'pending',
         ]);

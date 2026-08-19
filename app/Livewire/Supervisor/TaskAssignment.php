@@ -47,12 +47,15 @@ class TaskAssignment extends Component
 
     public function getWorkersProperty()
     {
-        return User::where('supervisor_id', auth()->id())->get();
+        return User::where('supervisor_id', auth()->id())
+            ->where('organization_id', auth()->user()->organization_id)
+            ->get();
     }
 
     public function getLocationsProperty()
     {
-        return Location::orderBy('building')
+        return Location::where('organization_id', auth()->user()->organization_id)
+            ->orderBy('building')
             ->orderBy('floor')
             ->orderBy('name')
             ->get();
@@ -61,6 +64,7 @@ class TaskAssignment extends Component
     public function getTasksProperty()
     {
         return Task::where('supervisor_id', auth()->id())
+            ->where('organization_id', auth()->user()->organization_id)
             ->with('location')
             ->latest()
             ->paginate(10);
@@ -83,6 +87,7 @@ class TaskAssignment extends Component
             'due_date' => $this->taskDueDate ?: null,
             'supervisor_id' => auth()->id(),
             'assigned_to' => $this->taskAssignedTo,
+            'organization_id' => auth()->user()->organization_id,
         ]);
 
         $assignee = User::find($this->taskAssignedTo);

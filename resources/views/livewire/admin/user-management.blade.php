@@ -18,11 +18,13 @@
             <h1 class="text-2xl font-bold text-gray-900">Users</h1>
             <p class="text-sm text-gray-500 mt-1">Manage all system users, roles, and access.</p>
         </div>
-        <button wire:click="openCreateModal"
-                type="button"
-                class="px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors shadow-sm cursor-pointer">
-            Create User
-        </button>
+        <div class="flex gap-3">
+            <button wire:click="openCreateModal"
+                    type="button"
+                    class="px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors shadow-sm cursor-pointer">
+                Add Worker
+            </button>
+        </div>
     </div>
 
     {{-- Users Table --}}
@@ -142,7 +144,7 @@
 
             <div class="relative bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full">
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Create User</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Add Worker</h3>
 
                     <form wire:submit="createUser">
                         <div class="space-y-4">
@@ -190,12 +192,25 @@
                                        class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
                                        placeholder="Repeat password">
                             </div>
+
+                            <div>
+                                <label for="createSupervisorId" class="block text-sm font-medium text-gray-700 mb-1">Assign to Supervisor (optional)</label>
+                                <select wire:model="createSupervisorId"
+                                        id="createSupervisorId"
+                                        class="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10">
+                                    <option value="">No supervisor</option>
+                                    @foreach ($supervisors as $supervisor)
+                                        <option value="{{ $supervisor->id }}">{{ $supervisor->name }}</option>
+                                    @endforeach
+                                </select>
+                                <p class="mt-1 text-xs text-gray-400">Link this worker to a supervisor's team.</p>
+                            </div>
                         </div>
 
                         <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-3">
                             <button type="submit"
                                     class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2.5 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:w-auto sm:text-sm">
-                                Create User
+                                Add Worker
                             </button>
                             <button type="button"
                                     x-on:click="$wire.call('closeCreateModal')"
@@ -283,4 +298,5 @@
             </div>
         </div>
     </div>
+
 </div>

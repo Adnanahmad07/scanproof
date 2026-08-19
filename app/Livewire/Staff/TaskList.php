@@ -18,7 +18,8 @@ class TaskList extends Component
 
     public function getTasksProperty()
     {
-        $query = Task::where('assigned_to', auth()->id());
+        $query = Task::where('assigned_to', auth()->id())
+            ->where('organization_id', auth()->user()->organization_id);
 
         if ($this->statusFilter) {
             $query->where('status', $this->statusFilter);

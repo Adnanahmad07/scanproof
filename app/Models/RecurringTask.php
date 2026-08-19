@@ -27,6 +27,7 @@ class RecurringTask extends Model
         'supervisor_id',
         'is_active',
         'last_generated_at',
+        'organization_id',
     ];
 
     protected function casts(): array

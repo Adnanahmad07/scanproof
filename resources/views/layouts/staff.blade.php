@@ -81,7 +81,7 @@
                     </div>
                     <div class="min-w-0">
                         <p class="text-sm font-semibold text-text-primary truncate">{{ auth()->user()->name ?? 'Worker' }}</p>
-                        <p class="text-xs text-text-muted truncate">Staff</p>
+                        <p class="text-xs text-text-muted truncate">{{ auth()->user()->organization->name ?? 'Staff' }}</p>
                     </div>
                 </div>
             </div>

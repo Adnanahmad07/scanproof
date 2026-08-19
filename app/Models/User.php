@@ -25,9 +25,11 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'role',
+        'organization_id',
         'supervisor_id',
         'can_print_qr',
         'is_active',
+        'email_verified_at',
     ];
 
     /**
@@ -54,6 +56,11 @@ class User extends Authenticatable implements MustVerifyEmail
             'can_print_qr' => 'boolean',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function organization(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
     }
 
     public function supervisor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -84,6 +91,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function createdLocations(): HasMany
     {
         return $this->hasMany(Location::class, 'created_by');
+    }
+
+    public static function orgId(): ?int
+    {
+        return auth()->check() ? auth()->user()->organization_id : null;
     }
 
     public function isAdmin(): bool

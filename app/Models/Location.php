@@ -28,6 +28,7 @@ class Location extends Model
         'configured_at',
         'created_by',
         'supervisor_id',
+        'organization_id',
     ];
 
     protected function casts(): array

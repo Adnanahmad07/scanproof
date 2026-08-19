@@ -50,6 +50,7 @@ class SetPassword extends Component
             'email' => $this->invitation->email,
             'password' => $this->password,
             'role' => UserRole::Supervisor,
+            'organization_id' => $this->invitation->organization_id,
             'email_verified_at' => now(),
         ]);
 

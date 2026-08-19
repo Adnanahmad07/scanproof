@@ -17,6 +17,8 @@ class GlobalSearchTest extends TestCase
     private User $admin;
     private User $supervisor;
     private User $staff;
+    private User $otherSupervisor;
+    private User $otherStaff;
 
     protected function setUp(): void
     {
@@ -28,6 +30,11 @@ class GlobalSearchTest extends TestCase
             'is_active' => true,
             'supervisor_id' => $this->supervisor->id,
         ]);
+        $this->otherSupervisor = User::factory()->supervisor()->create(['is_active' => true]);
+        $this->otherStaff = User::factory()->staff()->create([
+            'is_active' => true,
+            'supervisor_id' => $this->otherSupervisor->id,
+        ]);
 
         $this->location = Location::create([
             'name' => 'Conference Room A',
@@ -35,6 +42,15 @@ class GlobalSearchTest extends TestCase
             'floor' => '1st Floor',
             'uuid' => \Illuminate\Support\Str::uuid()->toString(),
             'supervisor_id' => $this->supervisor->id,
+            'created_by' => $this->admin->id,
+        ]);
+
+        $this->otherLocation = Location::create([
+            'name' => 'Server Room B',
+            'building' => 'IT Building',
+            'floor' => '2nd Floor',
+            'uuid' => \Illuminate\Support\Str::uuid()->toString(),
+            'supervisor_id' => $this->otherSupervisor->id,
             'created_by' => $this->admin->id,
         ]);
 
@@ -49,11 +65,30 @@ class GlobalSearchTest extends TestCase
             'assigned_to' => $this->staff->id,
         ]);
 
+        $this->otherTask = Task::create([
+            'title' => 'Maintain Server Room',
+            'location' => 'Server Room B',
+            'location_id' => $this->otherLocation->id,
+            'category' => 'maintenance',
+            'priority' => 'high',
+            'status' => 'in_progress',
+            'supervisor_id' => $this->otherSupervisor->id,
+            'assigned_to' => $this->otherStaff->id,
+        ]);
+
         $this->issue = Issue::create([
             'location_id' => $this->location->id,
             'description' => 'Broken window in conference room',
             'tracking_code' => 'SP-TEST12',
             'status' => 'reported',
+        ]);
+
+        $this->otherIssue = Issue::create([
+            'location_id' => $this->otherLocation->id,
+            'description' => 'Faulty server rack in server room',
+            'tracking_code' => 'SP-OTH34',
+            'status' => 'assigned',
+            'assigned_to' => $this->otherStaff->id,
         ]);
     }
 
@@ -215,5 +250,166 @@ class GlobalSearchTest extends TestCase
             ->test(\App\Livewire\GlobalSearch::class)
             ->set('query', 'Main Building')
             ->assertSee('Conference Room A');
+    }
+
+    // ── P2-TC11: Admin sees all tasks ──
+
+    public function test_p2_tc11_admin_sees_all_tasks(): void
+    {
+        Livewire::actingAs($this->admin)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', 'Clean Conference')
+            ->assertSee('Clean Conference Room');
+
+        Livewire::actingAs($this->admin)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', 'Maintain Server')
+            ->assertSee('Maintain Server Room');
+    }
+
+    // ── P2-TC12: Admin sees all issues ──
+
+    public function test_p2_tc12_admin_sees_all_issues(): void
+    {
+        Livewire::actingAs($this->admin)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', 'Broken window')
+            ->assertSee('SP-TEST12');
+
+        Livewire::actingAs($this->admin)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', 'Faulty server')
+            ->assertSee('SP-OTH34');
+    }
+
+    // ── P2-TC13: Admin sees all locations ──
+
+    public function test_p2_tc13_admin_sees_all_locations(): void
+    {
+        Livewire::actingAs($this->admin)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', 'Conference Room')
+            ->assertSee('Conference Room A');
+
+        Livewire::actingAs($this->admin)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', 'Server Room')
+            ->assertSee('Server Room B');
+    }
+
+    // ── P2-TC14: Supervisor only sees their own tasks ──
+
+    public function test_p2_tc14_supervisor_only_sees_own_tasks(): void
+    {
+        Livewire::actingAs($this->supervisor)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', 'Clean Conference')
+            ->assertSee('Clean Conference Room');
+
+        Livewire::actingAs($this->supervisor)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', 'Maintain Server')
+            ->assertDontSee('Maintain Server Room');
+    }
+
+    // ── P2-TC15: Supervisor only sees issues at their locations ──
+
+    public function test_p2_tc15_supervisor_only_sees_own_location_issues(): void
+    {
+        Livewire::actingAs($this->supervisor)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', 'Broken window')
+            ->assertSee('SP-TEST12');
+
+        Livewire::actingAs($this->supervisor)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', 'Faulty server')
+            ->assertDontSee('SP-OTH34');
+    }
+
+    // ── P2-TC16: Supervisor only sees their own locations ──
+
+    public function test_p2_tc16_supervisor_only_sees_own_locations(): void
+    {
+        Livewire::actingAs($this->supervisor)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', 'Conference Room')
+            ->assertSee('Conference Room A');
+
+        Livewire::actingAs($this->supervisor)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', 'Server Room')
+            ->assertDontSee('Server Room B');
+    }
+
+    // ── P2-TC17: Staff only sees tasks assigned to them ──
+
+    public function test_p2_tc17_staff_only_sees_own_tasks(): void
+    {
+        Livewire::actingAs($this->staff)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', 'Clean Conference')
+            ->assertSee('Clean Conference Room');
+
+        Livewire::actingAs($this->staff)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', 'Maintain Server')
+            ->assertDontSee('Maintain Server Room');
+    }
+
+    // ── P2-TC18: Staff only sees issues assigned to them ──
+
+    public function test_p2_tc18_staff_only_sees_own_issues(): void
+    {
+        $this->issue->update(['assigned_to' => $this->staff->id]);
+
+        Livewire::actingAs($this->staff)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', 'Broken window')
+            ->assertSee('SP-TEST12');
+
+        Livewire::actingAs($this->staff)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', 'Faulty server')
+            ->assertDontSee('SP-OTH34');
+    }
+
+    // ── P2-TC19: Staff only sees locations from their assigned tasks ──
+
+    public function test_p2_tc19_staff_sees_locations_from_own_tasks(): void
+    {
+        Livewire::actingAs($this->staff)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', 'Conference Room')
+            ->assertSee('Conference Room A');
+
+        Livewire::actingAs($this->staff)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', 'Server Room')
+            ->assertDontSee('Server Room B');
+    }
+
+    // ── P2-TC20: Staff cannot see users ──
+
+    public function test_p2_tc20_staff_cannot_see_users(): void
+    {
+        $component = Livewire::actingAs($this->staff)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', $this->admin->name);
+
+        $userResults = collect($component->get('results'))->where('type', 'user');
+        $this->assertCount(0, $userResults);
+    }
+
+    // ── P2-TC21: Supervisor cannot see users ──
+
+    public function test_p2_tc21_supervisor_cannot_see_users(): void
+    {
+        $component = Livewire::actingAs($this->supervisor)
+            ->test(\App\Livewire\GlobalSearch::class)
+            ->set('query', $this->admin->name);
+
+        $userResults = collect($component->get('results'))->where('type', 'user');
+        $this->assertCount(0, $userResults);
     }
 }

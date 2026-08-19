@@ -38,6 +38,7 @@ class WorkerManagement extends Component
     public function getWorkersProperty()
     {
         return User::where('supervisor_id', auth()->id())
+            ->where('organization_id', auth()->user()->organization_id)
             ->latest()
             ->paginate(10);
     }
@@ -48,7 +49,9 @@ class WorkerManagement extends Component
 
         $email = strtolower($this->workerEmail);
 
-        if (User::where('email', $email)->exists()) {
+        if (User::where('email', $email)
+            ->where('organization_id', auth()->user()->organization_id)
+            ->exists()) {
             $this->addError('workerEmail', 'A user with this email already exists.');
             return;
         }
@@ -59,6 +62,7 @@ class WorkerManagement extends Component
             'password' => Hash::make($this->workerPassword),
             'role' => UserRole::Staff,
             'supervisor_id' => auth()->id(),
+            'organization_id' => auth()->user()->organization_id,
         ]);
 
         $this->workerName = '';

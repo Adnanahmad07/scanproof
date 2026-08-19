@@ -43,7 +43,7 @@ class QrPrintController
 
     private function resolveLocations(Request $request): \Illuminate\Support\Collection
     {
-        $query = Location::query();
+        $query = Location::where('organization_id', auth()->user()->organization_id);
 
         // Supervisors can only see their own locations
         if (auth()->user()->isSupervisor()) {

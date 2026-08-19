@@ -9,6 +9,15 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RoleRedirectMiddleware
 {
+    private array $except = [
+        'logout',
+        'r/',
+        'track/',
+        'scan/',
+        'email/',
+        'supervisor/set-password/',
+    ];
+
     public function handle(Request $request, Closure $next): Response
     {
         if (!auth()->check()) {
@@ -18,20 +27,20 @@ class RoleRedirectMiddleware
         $user = auth()->user();
         $currentPath = $request->path();
 
-        $rolePaths = [
-            UserRole::Admin->value => 'admin',
-            UserRole::Supervisor->value => 'supervisor',
-            UserRole::Staff->value => 'staff',
-            UserRole::Client->value => 'client',
-        ];
+        // Allow excluded paths
+        foreach ($this->except as $prefix) {
+            if (str_starts_with($currentPath, $prefix)) {
+                return $next($request);
+            }
+        }
 
-        $rolePrefix = $rolePaths[$user->role->value] ?? 'dashboard';
+        $rolePrefix = $user->role->value;
 
         if ($currentPath === 'dashboard' || $currentPath === '') {
             return redirect()->to($user->role->dashboardPath());
         }
 
-        if (!str_starts_with($currentPath, $rolePrefix) && !str_starts_with($currentPath, 'logout')) {
+        if (!str_starts_with($currentPath, $rolePrefix)) {
             return redirect()->to($user->role->dashboardPath());
         }
 

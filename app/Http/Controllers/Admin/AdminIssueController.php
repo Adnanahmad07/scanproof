@@ -9,7 +9,8 @@ class AdminIssueController extends Controller
 {
     public function index()
     {
-        $issues = Issue::with(['location', 'assignee', 'reporter', 'task'])
+        $issues = Issue::where('organization_id', auth()->user()->organization_id)
+            ->with(['location', 'assignee', 'reporter', 'task'])
             ->latest()
             ->get();
 

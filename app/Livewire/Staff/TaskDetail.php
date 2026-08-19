@@ -25,6 +25,7 @@ class TaskDetail extends Component
     {
         $this->task = Task::where('id', $this->taskId)
             ->where('assigned_to', auth()->id())
+            ->where('organization_id', auth()->user()->organization_id)
             ->with(['photos', 'location', 'supervisor'])
             ->first();
     }

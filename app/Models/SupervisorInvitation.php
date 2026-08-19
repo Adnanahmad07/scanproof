@@ -15,6 +15,7 @@ class SupervisorInvitation extends Model
         'email',
         'token',
         'invited_by',
+        'organization_id',
         'expires_at',
         'accepted_at',
         'status',

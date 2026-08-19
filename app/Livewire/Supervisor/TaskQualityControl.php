@@ -22,6 +22,7 @@ class TaskQualityControl extends Component
     {
         $this->task = Task::where('id', $this->taskId)
             ->where('supervisor_id', auth()->id())
+            ->where('organization_id', auth()->user()->organization_id)
             ->with(['assignee', 'location', 'photos'])
             ->first();
     }

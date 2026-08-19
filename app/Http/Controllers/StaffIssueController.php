@@ -11,6 +11,7 @@ class StaffIssueController extends Controller
     public function index()
     {
         $issues = Issue::forStaff(auth()->id())
+            ->where('organization_id', auth()->user()->organization_id)
             ->with(['location'])
             ->latest()
             ->get();

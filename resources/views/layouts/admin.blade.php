@@ -100,11 +100,11 @@
             <div class="px-4 py-4">
                 <div class="flex items-center gap-3 px-3 py-2">
                     <div class="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center text-white font-semibold text-sm shadow-sm">
-                        SA
+                        {{ substr(auth()->user()->name ?? 'A', 0, 2) }}
                     </div>
                     <div class="min-w-0">
-                        <p class="text-sm font-semibold text-text-primary truncate">Scanproof Admin</p>
-                        <p class="text-xs text-text-muted truncate">Facility Manager</p>
+                        <p class="text-sm font-semibold text-text-primary truncate">{{ auth()->user()->name ?? 'Admin' }}</p>
+                        <p class="text-xs text-text-muted truncate">{{ auth()->user()->organization->name ?? 'Admin' }}</p>
                     </div>
                 </div>
             </div>
